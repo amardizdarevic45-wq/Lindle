@@ -1,4 +1,4 @@
-# Lindle MVP 🚀
+# Lindle MVP 
 ![Lindle Logo](lindle-logo-transparent.png)
 **AI-powered contract assistant** for freelancers, consultants, and agencies.  
 Upload a contract and Lindle will instantly deliver:  
