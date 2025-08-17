@@ -1,12 +1,18 @@
 # Lindle MVP 
+**All your contracts. One companion. Smart. Clear. Fun.**
 ![Lindle Logo](lindle-logo-transparent.png)
 **AI-powered contract assistant** for freelancers, consultants, and agencies.  
 Upload a contract and Lindle will instantly deliver:  
 - 📄 A **clear summary** of the document  
 - ⚠️ **Red flags** to watch out for  
 - 💡 **Pushback suggestions** you can use in negotiations  
-- 📥 A downloadable **PDF review report**  
+- 📥 A downloadable **PDF review report**    
 
+🌍 **Vision**  
+To empower the global solo economy with clarity and confidence in every contract, making legal language as accessible as everyday conversation.  
+
+🎯 **Mission**  
+Lindle is building an AI-powered contract companion that helps freelancers, consultants, and agencies instantly understand, negotiate, and manage their agreements — from red flag detection and pushback suggestions to reminders, clause storage, and live contract chat.  
 
 
 ## Features
