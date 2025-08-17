@@ -7,7 +7,7 @@ Upload a contract and Lindle will instantly deliver:
 - 💡 **Pushback suggestions** you can use in negotiations  
 - 📥 A downloadable **PDF review report**  
 
----
+
 
 ## Features
 - Upload **PDF, DOCX, or TXT** contracts  
@@ -16,14 +16,14 @@ Upload a contract and Lindle will instantly deliver:
 - Backend built with **FastAPI + OpenAI API**  
 - Export a professional **PDF report** (summary, red flags, pushbacks)  
 
----
+
 
 ## Tech Stack
 - **Backend:** FastAPI, OpenAI API, ReportLab, PyMuPDF, python-docx  
 - **Frontend:** HTML + TailwindCSS  
 - **Server:** Uvicorn (local dev)
   
----
+
 
 ## Roadmap (Beyond MVP)
 
@@ -36,7 +36,7 @@ In the next iterations, Lindle will expand into a **full AI-powered contract wor
 - 🤝 **Reputation Tracker** – keep a history of past clients/vendors with contract outcomes.  
 - 📊 **Insights Dashboard** – visualize risk exposure and negotiation wins across contracts.  
 
----
+
 
 ## Run Locally
 
