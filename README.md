@@ -38,7 +38,7 @@ In the next iterations, Lindle will expand into a **full AI-powered contract wor
 
 ---
 
-## 🚀 Run Locally
+## Run Locally
 
 Clone the project:
 
