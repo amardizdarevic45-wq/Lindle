@@ -1,4 +1,3 @@
-# lindle_mvp_backend_fastapi_fixed.py
 # FastAPI backend for Lindle MVP (with PDF download)
 # - Upload PDF/DOCX/TXT
 # - Extract text
@@ -6,13 +5,17 @@
 # - /analyze returns JSON
 # - /analyze_pdf returns a downloadable PDF
 #
+# Run with Docker:
+#   docker build -t lindle-backend .
+#   docker run -p 8000:8000 -e OPENAI_API_KEY=sk-... lindle-backend
+#
 # Run locally:
 #   python3 -m venv .venv && source .venv/bin/activate
-#   pip install -U fastapi uvicorn python-multipart pydantic openai PyMuPDF python-docx reportlab
+#   pip install -r requirements.txt
 #   export OPENAI_API_KEY=sk-...
 #   # optional if you use an sk-proj key:
 #   export OPENAI_PROJECT=proj_...
-#   uvicorn lindle_mvp_backend_fastapi_fixed:app --reload
+#   uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 from __future__ import annotations
 
