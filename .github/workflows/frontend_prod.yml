@@ -1,0 +1,60 @@
+name: "[PROD] Vercel Production Deployment"
+on:
+  push:
+    branches:
+      - main
+    paths: 
+      - 'frontend/**'
+      - '.github/workflows/frontend_prod.yml'
+  workflow_dispatch:
+
+env:
+  API_URL: 'https://yca-ca-backend-729811640717.europe-central2.run.app'
+  ENVIRONMENT: 'production'   # or true/false as needed
+  VERCEL_TOKEN: IGjct5AysIG9HjkhxcLN33Pi 
+  VERCEL_PROJECT_ID: prj_voOiBAFKm8q3huoNwnEOXvny935s
+  VERCEL_ORG_ID: team_8zGWwJVfJ833pRoxImI5GkBG
+
+jobs:
+  Deploy-Production:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: microsoft/variable-substitution@v1
+        with:
+          files: 'frontend/config.json'
+        env:
+          apps.API.url: ${{ env.API_URL }}
+
+      - name: Compute version
+        run: |
+          echo "NEXT_PUBLIC_FRONTEND_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV 
+          echo "NEXT_PUBLIC_GIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENVIRONMENT=prod" >> $GITHUB_ENV
+
+      - name: Change Directory
+        run: cd frontend
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Install Bun and add to PATH
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Pull + Build + Deploy Vercel
+        run: |
+          cd frontend
+          vercel pull --yes --environment=production --token=${{ env.VERCEL_TOKEN }}
+          VERCEL_BUILDER_OVERRIDE=npm vercel build --prod --token=${{ env.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ env.VERCEL_TOKEN }}
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ env.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
+          NEXT_PUBLIC_FRONTEND_VERSION: ${{ env.NEXT_PUBLIC_FRONTEND_VERSION }}
+          NEXT_PUBLIC_GIT_SHA: ${{ env.NEXT_PUBLIC_GIT_SHA }}
+          NEXT_PUBLIC_BUILD_TIME: ${{ env.NEXT_PUBLIC_BUILD_TIME }}
+          NEXT_PUBLIC_ENVIRONMENT: ${{ env.NEXT_PUBLIC_ENVIRONMENT }}
