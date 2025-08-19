@@ -68,7 +68,7 @@ Or using Docker Compose (copy .env.example to .env and fill in your API key):
 ```bash
 cp .env.example .env
 # Edit .env with your OPENAI_API_KEY
-docker-compose up --build
+docker compose up --build
 ```
 
 Then open `lindle_mvp_frontend.html` in your browser.
