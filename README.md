@@ -18,7 +18,8 @@ Lindle is building an AI-powered contract companion that helps freelancers, cons
 ## Features
 - Upload **PDF, DOCX, or TXT** contracts  
 - Get **AI-generated insights** in real-time  
-- Simple, intuitive **web interface** (HTML + TailwindCSS)  
+- Modern **Next.js React frontend** with TypeScript support
+- Responsive design with **TailwindCSS**
 - Backend built with **FastAPI + OpenAI API**  
 - Export a professional **PDF report** (summary, red flags, pushbacks)  
 
@@ -26,8 +27,9 @@ Lindle is building an AI-powered contract companion that helps freelancers, cons
 
 ## Tech Stack
 - **Backend:** FastAPI, OpenAI API, ReportLab, PyMuPDF, python-docx  
-- **Frontend:** HTML + TailwindCSS  
+- **Frontend:** Next.js 15, React 19, TypeScript, TailwindCSS  
 - **Server:** Uvicorn (local dev)
+- **Runtime:** Node.js 20+
   
 
 
@@ -53,6 +55,69 @@ git clone https://github.com/amardizdarevic45-wq/Lindle.git
 cd Lindle
 ```
 
+### Backend Setup
+
+1. Create and activate a virtual environment:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+2. Install Python dependencies:
+```bash
+pip install -U fastapi uvicorn python-multipart pydantic openai PyMuPDF python-docx reportlab
+```
+
+3. Set up your OpenAI API key:
+```bash
+export OPENAI_API_KEY=sk-your-api-key-here
+# Optional for sk-proj keys:
+export OPENAI_PROJECT=proj_your-project-id
+```
+
+4. Start the FastAPI backend:
+```bash
+uvicorn lindle_mvp_backend_fastapi:app --reload
+```
+
+The backend will be available at http://127.0.0.1:8000
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Install Node.js dependencies:
+```bash
+npm install
+```
+
+3. Start the Next.js development server:
+```bash
+npm run dev
+```
+
+The frontend will be available at http://localhost:3000
+
+### Usage
+
+1. Open your browser to http://localhost:3000
+2. Click "Get Started" to access the contract analysis tool
+3. Upload a PDF, DOCX, or TXT contract file
+4. Select your role (Freelancer, Consultant, or Agency)
+5. Choose your risk tolerance (Cautious, Standard, or Bold)
+6. Click "Analyze Contract" to get AI-powered insights
+7. Download a PDF report of the analysis if desired
+
+## API Endpoints
+
+- `GET /` - API status
+- `GET /health` - Health check with API key status
+- `POST /analyze` - Analyze contract and return JSON results
+- `POST /analyze_pdf` - Analyze contract and return PDF report
+=======
 ### Option 1: Docker (Recommended)
 
 Run the backend with Docker:
