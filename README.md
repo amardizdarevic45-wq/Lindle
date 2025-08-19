@@ -51,4 +51,40 @@ Clone the project:
 ```bash
 git clone https://github.com/amardizdarevic45-wq/Lindle.git
 cd Lindle
+```
+
+### Option 1: Docker (Recommended)
+
+Run the backend with Docker:
+
+```bash
+cd Backend
+docker build -t lindle-backend .
+docker run -p 8000:8000 -e OPENAI_API_KEY=your-key-here lindle-backend
+```
+
+Or using Docker Compose (copy .env.example to .env and fill in your API key):
+
+```bash
+cp .env.example .env
+# Edit .env with your OPENAI_API_KEY
+docker-compose up --build
+```
+
+Then open `lindle_mvp_frontend.html` in your browser.
+
+### Option 2: Local Development
+
+Set up the backend:
+
+```bash
+cd Backend
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+export OPENAI_API_KEY=your-key-here
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Then open `lindle_mvp_frontend.html` in your browser.
 
