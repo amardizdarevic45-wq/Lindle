@@ -20,6 +20,8 @@ import io
 import json
 import os
 import re
+import uuid
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
@@ -53,6 +55,159 @@ class AnalysisResponse(BaseModel):
     red_flags: List[str]
     pushbacks: List[str]
     tokens_used: Optional[int] = None
+    counterparty: Optional[str] = None
+    counterparty_type: Optional[str] = None
+    industry: Optional[str] = None
+
+# Reputation Tracker Models
+class Entity(BaseModel):
+    id: str
+    name: str
+    entity_type: str  # "client" or "vendor" 
+    industry: Optional[str] = None
+    contact_info: Optional[str] = None
+    reputation_score: float = 0.0
+    total_contracts: int = 0
+    created_at: str
+    updated_at: str
+
+class ContractOutcome(BaseModel):
+    id: str
+    entity_id: str
+    contract_filename: str
+    outcome: str  # "Successful Completion", "Early Termination", "Dispute", "Litigation", "Pending"
+    contract_summary: str
+    red_flags_count: int
+    pushbacks_count: int
+    role: str
+    risk_tolerance: str
+    created_at: str
+    updated_at: str
+    notes: Optional[str] = None
+
+class ReputationSummary(BaseModel):
+    entity: Entity
+    contracts: List[ContractOutcome]
+    performance_metrics: dict
+
+# ---------- Data Storage ----------
+DATA_DIR = "data"
+ENTITIES_FILE = os.path.join(DATA_DIR, "entities.json")
+CONTRACTS_FILE = os.path.join(DATA_DIR, "contracts.json")
+
+def ensure_data_dir():
+    """Ensure data directory exists"""
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+def load_entities() -> List[Entity]:
+    """Load entities from JSON file"""
+    ensure_data_dir()
+    if not os.path.exists(ENTITIES_FILE):
+        return []
+    try:
+        with open(ENTITIES_FILE, 'r') as f:
+            data = json.load(f)
+            return [Entity(**entity) for entity in data]
+    except Exception:
+        return []
+
+def save_entities(entities: List[Entity]):
+    """Save entities to JSON file"""
+    ensure_data_dir()
+    with open(ENTITIES_FILE, 'w') as f:
+        json.dump([entity.dict() for entity in entities], f, indent=2)
+
+def load_contracts() -> List[ContractOutcome]:
+    """Load contracts from JSON file"""
+    ensure_data_dir()
+    if not os.path.exists(CONTRACTS_FILE):
+        return []
+    try:
+        with open(CONTRACTS_FILE, 'r') as f:
+            data = json.load(f)
+            return [ContractOutcome(**contract) for contract in data]
+    except Exception:
+        return []
+
+def save_contracts(contracts: List[ContractOutcome]):
+    """Save contracts to JSON file"""
+    ensure_data_dir()
+    with open(CONTRACTS_FILE, 'w') as f:
+        json.dump([contract.dict() for contract in contracts], f, indent=2)
+
+def find_or_create_entity(name: str, entity_type: str, industry: str = None) -> Entity:
+    """Find existing entity or create a new one"""
+    entities = load_entities()
+    
+    # Try to find existing entity (case-insensitive)
+    for entity in entities:
+        if entity.name.lower() == name.lower():
+            return entity
+    
+    # Create new entity
+    entity_id = str(uuid.uuid4())
+    now = datetime.utcnow().isoformat()
+    
+    new_entity = Entity(
+        id=entity_id,
+        name=name,
+        entity_type=entity_type,
+        industry=industry,
+        reputation_score=0.0,
+        total_contracts=0,
+        created_at=now,
+        updated_at=now
+    )
+    
+    entities.append(new_entity)
+    save_entities(entities)
+    return new_entity
+
+def calculate_reputation_score(entity_id: str) -> float:
+    """Calculate reputation score based on contract outcomes"""
+    contracts = load_contracts()
+    entity_contracts = [c for c in contracts if c.entity_id == entity_id]
+    
+    if not entity_contracts:
+        return 0.0
+    
+    # Simple scoring algorithm
+    score = 0.0
+    for contract in entity_contracts:
+        if contract.outcome == "Successful Completion":
+            score += 10
+        elif contract.outcome == "Pending":
+            score += 5
+        elif contract.outcome == "Early Termination":
+            score -= 3
+        elif contract.outcome == "Dispute":
+            score -= 7
+        elif contract.outcome == "Litigation":
+            score -= 15
+        
+        # Adjust for red flags (more red flags = lower score)
+        score -= contract.red_flags_count * 0.5
+    
+    # Normalize to 0-100 scale
+    max_possible = len(entity_contracts) * 10
+    if max_possible > 0:
+        score = max(0, min(100, (score / max_possible) * 100))
+    
+    return round(score, 1)
+
+def update_entity_reputation(entity_id: str):
+    """Update entity's reputation score and contract count"""
+    entities = load_entities()
+    contracts = load_contracts()
+    
+    for entity in entities:
+        if entity.id == entity_id:
+            entity.reputation_score = calculate_reputation_score(entity_id)
+            entity.total_contracts = len([c for c in contracts if c.entity_id == entity_id])
+            entity.updated_at = datetime.utcnow().isoformat()
+            break
+    
+    save_entities(entities)
 
 # ---------- File extraction ----------
 SUPPORTED_EXTS = {"pdf", "docx", "txt"}
@@ -98,9 +253,13 @@ USER_PROMPT_TEMPLATE = (
     "TASKS:\n"
     "1) SUMMARY (<= 180 words): Briefly explain parties, scope, payment, term, obligations.\n"
     "2) RED_FLAGS (5 bullets): Most material risks for the ROLE; name clauses or short quotes if helpful.\n"
-    "3) PUSHBACKS (5 bullets): Polite, firm negotiation asks aligned to RISK_TOLERANCE.\n\n"
+    "3) PUSHBACKS (5 bullets): Polite, firm negotiation asks aligned to RISK_TOLERANCE.\n"
+    "4) COUNTERPARTY: Extract the other party's name (client/vendor name, not individual person names).\n"
+    "5) COUNTERPARTY_TYPE: Classify as either 'client' or 'vendor' based on the contract relationship.\n"
+    "6) INDUSTRY: Identify the counterparty's industry if mentioned.\n\n"
     "CONTRACT TEXT:\n{contract}\n\n"
-    "RETURN STRICT JSON with keys: summary (string), red_flags (string[ ]), pushbacks (string[ ])."
+    "RETURN STRICT JSON with keys: summary (string), red_flags (string[ ]), pushbacks (string[ ]), "
+    "counterparty (string), counterparty_type (string), industry (string or null)."
 )
 
 MODEL = os.getenv("LINDLE_MODEL", "gpt-4o-mini")
@@ -129,8 +288,12 @@ def call_openai(contract_text: str, role: str, risk: str) -> AnalysisResponse:
         summary = (data.get("summary") or "").strip()
         red_flags = [str(x).strip() for x in (data.get("red_flags") or [])][:5]
         pushbacks = [str(x).strip() for x in (data.get("pushbacks") or [])][:5]
+        counterparty = (data.get("counterparty") or "").strip() or None
+        counterparty_type = (data.get("counterparty_type") or "").strip() or None
+        industry = (data.get("industry") or "").strip() or None
     except Exception:
         summary, red_flags, pushbacks = content[:1000], [], []
+        counterparty, counterparty_type, industry = None, None, None
 
     tokens_used = None
     try:
@@ -138,7 +301,15 @@ def call_openai(contract_text: str, role: str, risk: str) -> AnalysisResponse:
     except Exception:
         pass
 
-    return AnalysisResponse(summary=summary, red_flags=red_flags, pushbacks=pushbacks, tokens_used=tokens_used)
+    return AnalysisResponse(
+        summary=summary, 
+        red_flags=red_flags, 
+        pushbacks=pushbacks, 
+        tokens_used=tokens_used,
+        counterparty=counterparty,
+        counterparty_type=counterparty_type,
+        industry=industry
+    )
 
 # ---------- PDF builder ----------
 from reportlab.lib.pagesizes import A4
@@ -198,7 +369,49 @@ async def analyze(
     text = _sniff_and_extract(file.filename, content)
     if not text or len(text) < 50:
         raise HTTPException(status_code=400, detail="Contract appears empty or too short.")
-    return call_openai(text, role=role, risk=risk_tolerance)
+    
+    result = call_openai(text, role=role, risk=risk_tolerance)
+    
+    # Store contract information if counterparty is identified
+    if result.counterparty and result.counterparty_type:
+        try:
+            entity = find_or_create_entity(
+                name=result.counterparty,
+                entity_type=result.counterparty_type,
+                industry=result.industry
+            )
+            
+            # Create contract record
+            contract_id = str(uuid.uuid4())
+            now = datetime.utcnow().isoformat()
+            
+            contract = ContractOutcome(
+                id=contract_id,
+                entity_id=entity.id,
+                contract_filename=file.filename or "unknown",
+                outcome="Pending",  # Default to pending
+                contract_summary=result.summary,
+                red_flags_count=len(result.red_flags),
+                pushbacks_count=len(result.pushbacks),
+                role=role,
+                risk_tolerance=risk_tolerance,
+                created_at=now,
+                updated_at=now
+            )
+            
+            # Save contract
+            contracts = load_contracts()
+            contracts.append(contract)
+            save_contracts(contracts)
+            
+            # Update entity reputation
+            update_entity_reputation(entity.id)
+            
+        except Exception as e:
+            # Don't fail the analysis if reputation tracking fails
+            print(f"Warning: Failed to store reputation data: {e}")
+    
+    return result
 
 
 @app.post("/analyze_pdf")
@@ -216,3 +429,175 @@ async def analyze_pdf(
     pdf_bytes = build_pdf(result.summary, result.red_flags, result.pushbacks)
     headers = {"Content-Disposition": "attachment; filename=contract_analysis.pdf"}
     return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers=headers)
+
+
+# ---------- Reputation Tracking Endpoints ----------
+
+@app.get("/entities")
+async def get_entities():
+    """Get all entities with their reputation scores"""
+    entities = load_entities()
+    return {"entities": [entity.dict() for entity in entities]}
+
+@app.get("/entity/{entity_id}")
+async def get_entity(entity_id: str):
+    """Get entity details with contract history"""
+    entities = load_entities()
+    contracts = load_contracts()
+    
+    entity = None
+    for e in entities:
+        if e.id == entity_id:
+            entity = e
+            break
+    
+    if not entity:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    
+    entity_contracts = [c for c in contracts if c.entity_id == entity_id]
+    
+    # Calculate performance metrics
+    total = len(entity_contracts)
+    if total > 0:
+        successful = len([c for c in entity_contracts if c.outcome == "Successful Completion"])
+        disputed = len([c for c in entity_contracts if c.outcome in ["Dispute", "Litigation"]])
+        terminated = len([c for c in entity_contracts if c.outcome == "Early Termination"])
+        pending = len([c for c in entity_contracts if c.outcome == "Pending"])
+        
+        performance_metrics = {
+            "total_contracts": total,
+            "success_rate": round((successful / total) * 100, 1),
+            "dispute_rate": round((disputed / total) * 100, 1),
+            "termination_rate": round((terminated / total) * 100, 1),
+            "pending_contracts": pending,
+            "avg_red_flags": round(sum(c.red_flags_count for c in entity_contracts) / total, 1)
+        }
+    else:
+        performance_metrics = {
+            "total_contracts": 0,
+            "success_rate": 0,
+            "dispute_rate": 0,
+            "termination_rate": 0,
+            "pending_contracts": 0,
+            "avg_red_flags": 0
+        }
+    
+    return ReputationSummary(
+        entity=entity,
+        contracts=entity_contracts,
+        performance_metrics=performance_metrics
+    ).dict()
+
+@app.put("/contract/{contract_id}/outcome")
+async def update_contract_outcome(
+    contract_id: str,
+    outcome: str = Form(...),
+    notes: str = Form(None)
+):
+    """Update contract outcome"""
+    valid_outcomes = ["Successful Completion", "Early Termination", "Dispute", "Litigation", "Pending"]
+    if outcome not in valid_outcomes:
+        raise HTTPException(status_code=400, detail=f"Invalid outcome. Must be one of: {valid_outcomes}")
+    
+    contracts = load_contracts()
+    contract_found = False
+    
+    for contract in contracts:
+        if contract.id == contract_id:
+            contract.outcome = outcome
+            contract.updated_at = datetime.utcnow().isoformat()
+            if notes:
+                contract.notes = notes
+            contract_found = True
+            
+            # Update entity reputation
+            update_entity_reputation(contract.entity_id)
+            break
+    
+    if not contract_found:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    save_contracts(contracts)
+    return {"message": "Contract outcome updated successfully"}
+
+@app.get("/entities/search")
+async def search_entities(
+    query: str = None,
+    outcome: str = None,
+    risk_level: str = None
+):
+    """Search and filter entities"""
+    entities = load_entities()
+    contracts = load_contracts()
+    results = []
+    
+    for entity in entities:
+        entity_contracts = [c for c in contracts if c.entity_id == entity.id]
+        
+        # Apply filters
+        if query and query.lower() not in entity.name.lower():
+            continue
+        
+        if outcome:
+            if not any(c.outcome == outcome for c in entity_contracts):
+                continue
+        
+        if risk_level:
+            if risk_level == "high" and entity.reputation_score > 50:
+                continue
+            elif risk_level == "low" and entity.reputation_score < 75:
+                continue
+        
+        results.append({
+            "entity": entity.dict(),
+            "contract_count": len(entity_contracts),
+            "latest_outcome": entity_contracts[-1].outcome if entity_contracts else "None"
+        })
+    
+    return {"results": results}
+
+@app.get("/reputation/report/{entity_id}")
+async def generate_reputation_report(entity_id: str):
+    """Generate detailed reputation report for an entity"""
+    entities = load_entities()
+    contracts = load_contracts()
+    
+    entity = None
+    for e in entities:
+        if e.id == entity_id:
+            entity = e
+            break
+    
+    if not entity:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    
+    entity_contracts = [c for c in contracts if c.entity_id == entity_id]
+    
+    # Detailed analysis
+    report = {
+        "entity": entity.dict(),
+        "summary": {
+            "total_contracts": len(entity_contracts),
+            "reputation_score": entity.reputation_score,
+            "risk_assessment": "High Risk" if entity.reputation_score < 40 else 
+                              "Medium Risk" if entity.reputation_score < 70 else "Low Risk"
+        },
+        "contract_history": [c.dict() for c in entity_contracts],
+        "recommendations": []
+    }
+    
+    # Generate recommendations
+    if entity.reputation_score < 40:
+        report["recommendations"].append("Exercise extreme caution - consider additional due diligence")
+        report["recommendations"].append("Require stronger contract terms and penalties")
+    elif entity.reputation_score < 70:
+        report["recommendations"].append("Standard due diligence recommended")
+        report["recommendations"].append("Consider performance bonds or escrow")
+    else:
+        report["recommendations"].append("Preferred partner - standard contract terms acceptable")
+    
+    dispute_rate = len([c for c in entity_contracts if c.outcome in ["Dispute", "Litigation"]])
+    if dispute_rate > 0:
+        report["recommendations"].append(f"Note: {dispute_rate} dispute(s) in history - review dispute resolution clauses")
+    
+    return report
