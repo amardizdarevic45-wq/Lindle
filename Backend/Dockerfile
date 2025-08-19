@@ -1,24 +1,28 @@
-# Use Python 3.11 slim image as base
-FROM python:3.11-slim
+FROM python:3.9-slim
 
-# Set working directory in container
-WORKDIR /app
+WORKDIR /lindle
 
-# Copy requirements first for better Docker layer caching
-COPY requirements.txt .
+# Build-time version metadata
+ARG BACKEND_VERSION=dev
+ARG GIT_SHA=unknown
+ARG BUILD_TIME=unknown
+ARG ENVIRONMENT=dev
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
+# Runtime environment variables
+ENV BACKEND_VERSION=$BACKEND_VERSION \
+    GIT_SHA=$GIT_SHA \
+    BUILD_TIME=$BUILD_TIME \
+    ENVIRONMENT=$ENVIRONMENT
 
-# Copy the application code
-COPY main.py .
+COPY requirements.txt /lindle/requirements.txt
 
-# Expose the port that the app runs on
-EXPOSE 8000
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    pip install --no-cache-dir --upgrade -r /lindle/requirements.txt && \
+    apt-get remove -y build-essential && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* /root/.cache
 
-# Set environment variables
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
+COPY . /lindle/
 
-# Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "80"]

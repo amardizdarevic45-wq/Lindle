@@ -24,7 +24,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.health import router as health_router
 from routes.analysis import router as analysis_router
 
-# Initialize FastAPI app
+
+
+# ---------- FastAPI ----------
 app = FastAPI(title="Lindle MVP API", version="0.4")
 
 # Add CORS middleware
