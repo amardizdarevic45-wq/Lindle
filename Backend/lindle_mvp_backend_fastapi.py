@@ -1,4 +1,4 @@
-# lindle_mvp_backend_fastapi_fixed.py
+# lindle_mvp_backend_fastapi.py
 # FastAPI backend for Lindle MVP (with PDF download)
 # - Upload PDF/DOCX/TXT
 # - Extract text
@@ -12,7 +12,7 @@
 #   export OPENAI_API_KEY=sk-...
 #   # optional if you use an sk-proj key:
 #   export OPENAI_PROJECT=proj_...
-#   uvicorn lindle_mvp_backend_fastapi_fixed:app --reload
+#   uvicorn lindle_mvp_backend_fastapi:app --reload
 
 from __future__ import annotations
 

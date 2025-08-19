@@ -1,6 +1,6 @@
 # Lindle MVP 
 **All your contracts. One companion. Smart. Clear. Fun.**
-![Lindle Logo](lindle-logo-transparent.png)
+![Lindle Logo](Frontend/lindle-logo-transparent.png)
 **AI-powered contract assistant** for freelancers, consultants, and agencies.  
 Upload a contract and Lindle will instantly deliver:  
 - 📄 A **clear summary** of the document  
@@ -52,3 +52,39 @@ Clone the project:
 git clone https://github.com/amardizdarevic45-wq/Lindle.git
 cd Lindle
 
+# Install backend dependencies
+cd Backend
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Set up OpenAI API key
+export OPENAI_API_KEY=sk-...
+# Optional for project-based keys:
+export OPENAI_PROJECT=proj_...
+
+# Start the backend server
+uvicorn lindle_mvp_backend_fastapi:app --reload
+
+# In a new terminal, serve the frontend (from project root)
+cd ../Frontend
+python3 -m http.server 8080
+# Or use any other web server to serve the HTML files
+
+# Open your browser to http://localhost:8080/lindle_mvp_frontend.html
+```
+
+## Project Structure
+
+```
+Lindle/
+├── Backend/
+│   ├── lindle_mvp_backend_fastapi.py    # FastAPI backend with reputation tracking
+│   └── requirements.txt                  # Python dependencies
+├── Frontend/
+│   ├── lindle_mvp_frontend.html         # Basic frontend interface
+│   ├── lindle_mvp_frontend_enhanced.html # Enhanced UI with reputation tracker
+│   ├── lindle-logo-transparent.png     # Logo assets
+│   └── lindle-logo.png
+└── README.md
+```
