@@ -51,7 +51,7 @@ export default function AnalyzePage() {
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!file) {
       alert('Please upload a file');
       return;
@@ -191,11 +191,10 @@ export default function AnalyzePage() {
                           key={option.value}
                           type="button"
                           onClick={() => setRole(option.value)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 backdrop-blur-sm ${
-                            role === option.value
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 backdrop-blur-sm ${role === option.value
                               ? 'bg-blue-500/20 border-2 border-blue-400/50 text-blue-700 shadow-lg'
                               : 'bg-white/50 border-2 border-white/30 text-gray-700 hover:bg-blue-50/70 hover:border-blue-300/50 hover:text-blue-600'
-                          }`}
+                            }`}
                         >
                           {option.label}
                         </button>
@@ -215,11 +214,10 @@ export default function AnalyzePage() {
                           key={option.value}
                           type="button"
                           onClick={() => setRiskTolerance(option.value)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 backdrop-blur-sm ${
-                            riskTolerance === option.value
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 backdrop-blur-sm ${riskTolerance === option.value
                               ? 'bg-emerald-500/20 border-2 border-emerald-400/50 text-emerald-700 shadow-lg'
                               : 'bg-white/50 border-2 border-white/30 text-gray-700 hover:bg-emerald-50/70 hover:border-emerald-300/50 hover:text-emerald-600'
-                          }`}
+                            }`}
                         >
                           {option.label}
                         </button>
@@ -295,7 +293,7 @@ export default function AnalyzePage() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No Analysis Yet</h3>
-                  <p className="text-gray-500">Upload a contract and click "Analyze Contract" to see results here.</p>
+                  <p className="text-gray-500">Upload a contract and click <b>Analyze Contract</b> to see results here.</p>
                 </div>
               )}
             </div>
