@@ -8,7 +8,7 @@ export default function Home() {
       <header className="flex items-center justify-between max-w-6xl mx-auto py-2 px-4">
         {/* Logo */}
         <div className="flex items-center space-x-2">
-          <Image src="/lindle-logo.png" alt="Lindle Logo" width={304} height={144} className="w-76 h-36" />
+          <Image src="/lindle-logo-transparent.png" alt="Lindle Logo" width={304} height={144} className="w-76 h-36" />
         </div>
         {/* Nav Links */}
         <nav className="hidden md:flex space-x-8 text-black">
