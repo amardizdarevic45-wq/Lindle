@@ -1,6 +1,6 @@
 # Lindle MVP 
 **All your contracts. One companion. Smart. Clear. Fun.**
-![Lindle Logo](lindle-logo-transparent.png)
+![Lindle Logo](Frontend/lindle-logo-transparent.png)
 **AI-powered contract assistant** for freelancers, consultants, and agencies.  
 Upload a contract and Lindle will instantly deliver:  
 - 📄 A **clear summary** of the document  
@@ -153,3 +153,63 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 Then open `lindle_mvp_frontend.html` in your browser.
 
+# Install backend dependencies
+cd Backend
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Set up OpenAI API key
+export OPENAI_API_KEY=sk-...
+# Optional for project-based keys:
+export OPENAI_PROJECT=proj_...
+
+# Start the backend server
+uvicorn lindle_mvp_backend_fastapi:app --reload
+
+# In a new terminal, start the React frontend
+cd ../Frontend
+npm install
+npm start
+
+# The React app will open in your browser at http://localhost:3000
+```
+
+For production deployment:
+
+```bash
+# Build the React app for production
+cd Frontend
+npm run build
+
+# Serve the build folder with any static file server
+# Example with a simple Python server:
+cd build
+python3 -m http.server 3000
+```
+
+## Project Structure
+
+```
+Lindle/
+├── Backend/
+│   ├── lindle_mvp_backend_fastapi.py    # FastAPI backend with reputation tracking
+│   └── requirements.txt                  # Python dependencies
+├── Frontend/                             # React application
+│   ├── public/                           # Static assets
+│   │   ├── lindle-logo-transparent.png  # Logo assets
+│   │   └── lindle-logo.png
+│   ├── src/
+│   │   ├── components/                   # React components
+│   │   │   ├── LindleApp.js             # Main app component
+│   │   │   ├── Navigation.js            # Navigation tabs
+│   │   │   ├── ContractAnalysis.js      # Contract analysis feature
+│   │   │   ├── ReputationTracker.js     # Reputation management
+│   │   │   └── EntityModal.js           # Entity detail modal
+│   │   ├── App.js                       # App entry point
+│   │   └── index.js                     # React DOM render
+│   ├── package.json                     # Node.js dependencies
+│   └── README.md                        # React app documentation
+├── Frontend_backup/                     # Backup of original HTML files
+└── README.md
+```

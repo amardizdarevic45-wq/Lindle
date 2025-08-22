@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lindle MVP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-sm border-b mb-8">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center space-x-8">
+          <img src="lindle-logo-transparent.png" alt="Lindle" class="w-20 h-8" />
+          <div class="flex space-x-6">
+            <button id="analyzeTab" class="tab-button active px-4 py-2 text-sm font-medium border-b-2 border-[#0066FF] text-[#0066FF]">Analyze Contract</button>
+            <button id="reputationTab" class="tab-button px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">Reputation Tracker</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contract Analysis Section -->
+  <div id="analyzeSection" class="tab-content max-w-2xl mx-auto py-4 px-4">
+    <div class="flex flex-col items-center mb-8">
+      <h1 class="text-3xl font-bold text-[#0066FF]">Smart. Clear. Fun</h1>
+      <p class="text-gray-600 text-center mt-2">Upload a contract to get a summary, red flags, and pushback suggestions.</p>
+    </div>
+
+    <form id="uploadForm" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+      <input type="file" id="contractFile" name="file" accept=".pdf,.docx,.txt" class="block w-full text-sm text-gray-700" required />
+
+      <label for="role" class="block text-sm font-medium">Your Role</label>
+      <select id="role" name="role" class="block w-full border rounded p-2">
+        <option value="freelancer">Freelancer</option>
+        <option value="consultant">Consultant</option>
+        <option value="agency">Agency</option>
+      </select>
+
+      <label for="risk_tolerance" class="block text-sm font-medium">Risk Tolerance</label>
+      <select id="risk_tolerance" name="risk_tolerance" class="block w-full border rounded p-2">
+        <option value="cautious">Cautious</option>
+        <option value="standard" selected>Standard</option>
+        <option value="bold">Bold</option>
+      </select>
+
+      <div class="grid grid-cols-1 justify-center">
+        <button type="submit" id="analyzeBtn" class="bg-blue-600 text-white px-8 py-2 rounded hover:bg-blue-700">Analyze Contract</button>
+      </div>
+      <p id="status" class="text-sm text-gray-500"></p>
+    </form>
+
+    <div id="results" class="mt-8 hidden">
+      <h2 class="text-2xl font-bold mb-4"></h2>
+
+      <!-- Counterparty Information -->
+      <div id="counterpartyInfo" class="mb-6 rounded-xl border-l-4 border-[#28C76F] bg-white p-6 shadow-lg hidden">
+        <h3 class="font-semibold">Counterparty Information</h3>
+        <div id="counterpartyDetails" class="text-gray-700 mt-2"></div>
+        <div id="reputationAlert" class="mt-3"></div>
+      </div>
+
+      <div class="mb-6 rounded-xl border-l-4 border-[#1d7bf7] bg-white p-6 shadow-lg">
+        <h3 class="font-semibold">Summary</h3>
+        <p id="summary" class="text-gray-700"></p>
+      </div>
+
+      <div class="mb-6 rounded-xl border-l-4 border-[#FFB400] bg-white p-6 shadow-lg">
+        <h3 class="font-semibold">Red Flags</h3>
+        <ul id="red_flags" class="list-disc list-outside pl-5 text-gray-700"></ul>
+      </div>
+
+      <div class="rounded-xl border-l-4 border-[#28C76F] bg-white p-6 shadow-lg">
+        <h3 class="font-semibold">Pushbacks</h3>
+        <ul id="pushbacks" class="list-disc list-outside pl-5 text-gray-700"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reputation Tracker Section -->
+  <div id="reputationSection" class="tab-content hidden max-w-6xl mx-auto py-4 px-4">
+    <div class="flex flex-col items-center mb-8">
+      <h1 class="text-3xl font-bold text-[#0066FF]">Reputation Tracker</h1>
+      <p class="text-gray-600 text-center mt-2">Track your clients and vendors with contract outcome history.</p>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="searchQuery" class="block text-sm font-medium mb-1">Search Entities</label>
+          <input type="text" id="searchQuery" placeholder="Search by name..." class="w-full border rounded p-2">
+        </div>
+        <div>
+          <label for="filterOutcome" class="block text-sm font-medium mb-1">Filter by Outcome</label>
+          <select id="filterOutcome" class="w-full border rounded p-2">
+            <option value="">All Outcomes</option>
+            <option value="Successful Completion">Successful Completion</option>
+            <option value="Pending">Pending</option>
+            <option value="Early Termination">Early Termination</option>
+            <option value="Dispute">Dispute</option>
+            <option value="Litigation">Litigation</option>
+          </select>
+        </div>
+        <div>
+          <label for="filterRisk" class="block text-sm font-medium mb-1">Risk Level</label>
+          <select id="filterRisk" class="w-full border rounded p-2">
+            <option value="">All Risk Levels</option>
+            <option value="high">High Risk (&lt;40)</option>
+            <option value="low">Low Risk (&gt;75)</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4">
+        <button id="searchBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Search</button>
+        <button id="refreshBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Entities List -->
+    <div class="bg-white rounded-lg shadow-md">
+      <div class="px-6 py-4 border-b">
+        <h2 class="text-xl font-semibold">Entities</h2>
+      </div>
+      <div id="entitiesList" class="divide-y">
+        <!-- Entities will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Entity Detail Modal -->
+  <div id="entityModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+      <div class="px-6 py-4 border-b flex justify-between items-center">
+        <h2 id="entityModalTitle" class="text-xl font-semibold">Entity Details</h2>
+        <button id="closeModal" class="text-gray-400 hover:text-gray-600">&times;</button>
+      </div>
+      <div id="entityModalContent" class="p-6">
+        <!-- Entity details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <div id="downloadSection" class="hidden flex min-h-screen flex-col items-center bg-gradient-to-b from-white to-[#F8FAFC] p-8 font-sans">
+    <img src="lindle-logo-transparent.png" alt="Lindle Logo" class="w-76 h-36"/>
+    <h2 class="mb-4 text-2xl font-bold text-[#0066FF]">Download Your Review</h2>
+    <div class="grid grid-cols-1 justify center">
+      <button type="button" id="downloadPdf" class="bg-emerald-600 text-white px-6 py-3 rounded hover:bg-emerald-700">Download PDF</button>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching functionality
+    const analyzeTab = document.getElementById('analyzeTab');
+    const reputationTab = document.getElementById('reputationTab');
+    const analyzeSection = document.getElementById('analyzeSection');
+    const reputationSection = document.getElementById('reputationSection');
+
+    function switchTab(activeTab, activeSection, inactiveTab, inactiveSection) {
+      activeTab.classList.add('active', 'border-[#0066FF]', 'text-[#0066FF]');
+      activeTab.classList.remove('border-transparent', 'text-gray-500');
+      inactiveTab.classList.remove('active', 'border-[#0066FF]', 'text-[#0066FF]');
+      inactiveTab.classList.add('border-transparent', 'text-gray-500');
+      
+      activeSection.classList.remove('hidden');
+      inactiveSection.classList.add('hidden');
+    }
+
+    analyzeTab.addEventListener('click', () => {
+      switchTab(analyzeTab, analyzeSection, reputationTab, reputationSection);
+    });
+
+    reputationTab.addEventListener('click', () => {
+      switchTab(reputationTab, reputationSection, analyzeTab, analyzeSection);
+      loadEntities();
+    });
+
+    // Original contract analysis functionality
+    const form = document.getElementById('uploadForm');
+    const resultsDiv = document.getElementById('results');
+    const summaryEl = document.getElementById('summary');
+    const redFlagsEl = document.getElementById('red_flags');
+    const pushbacksEl = document.getElementById('pushbacks');
+    const statusEl = document.getElementById('status');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const downloadBtn = document.getElementById('downloadPdf');
+    const counterpartyInfoEl = document.getElementById('counterpartyInfo');
+    const counterpartyDetailsEl = document.getElementById('counterpartyDetails');
+    const reputationAlertEl = document.getElementById('reputationAlert');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('contractFile');
+      if (!fileInput.files.length) {
+        alert('Please upload a file');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('role', document.getElementById('role').value);
+      formData.append('risk_tolerance', document.getElementById('risk_tolerance').value);
+
+      try {
+        analyzeBtn.disabled = true; downloadBtn.disabled = true;
+        statusEl.textContent = 'Analyzing…';
+
+        const response = await fetch('http://127.0.0.1:8000/analyze', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        summaryEl.textContent = data.summary || '';
+        redFlagsEl.innerHTML = (data.red_flags || []).map(flag => `<li>${flag}</li>`).join('');
+        pushbacksEl.innerHTML = (data.pushbacks || []).map(pb => `<li>${pb}</li>`).join('');
+
+        // Show counterparty information if available
+        if (data.counterparty) {
+          counterpartyInfoEl.classList.remove('hidden');
+          counterpartyDetailsEl.innerHTML = `
+            <p><strong>Name:</strong> ${data.counterparty}</p>
+            <p><strong>Type:</strong> ${data.counterparty_type}</p>
+            ${data.industry ? `<p><strong>Industry:</strong> ${data.industry}</p>` : ''}
+          `;
+          
+          // Check reputation and show alert if needed
+          checkCounterpartyReputation(data.counterparty);
+        } else {
+          counterpartyInfoEl.classList.add('hidden');
+        }
+
+        resultsDiv.classList.remove('hidden');
+        document.getElementById('downloadSection').classList.remove('hidden');
+        statusEl.textContent = '';
+      } catch (err) {
+        statusEl.textContent = '';
+        alert('Failed to analyze contract: ' + err.message);
+      } finally {
+        analyzeBtn.disabled = false; downloadBtn.disabled = false;
+      }
+    });
+
+    async function checkCounterpartyReputation(counterpartyName) {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/entities/search?query=${encodeURIComponent(counterpartyName)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.results && data.results.length > 0) {
+            const entity = data.results[0].entity;
+            let alertClass = '';
+            let alertText = '';
+            
+            if (entity.reputation_score < 40) {
+              alertClass = 'bg-red-100 border-red-400 text-red-700';
+              alertText = `⚠️ High Risk: This entity has a low reputation score of ${entity.reputation_score}/100. Consider additional due diligence.`;
+            } else if (entity.reputation_score < 70) {
+              alertClass = 'bg-yellow-100 border-yellow-400 text-yellow-700';
+              alertText = `⚠️ Medium Risk: This entity has a reputation score of ${entity.reputation_score}/100. Standard caution recommended.`;
+            } else {
+              alertClass = 'bg-green-100 border-green-400 text-green-700';
+              alertText = `✅ Low Risk: This entity has a good reputation score of ${entity.reputation_score}/100 from ${entity.total_contracts} contracts.`;
+            }
+            
+            reputationAlertEl.innerHTML = `
+              <div class="${alertClass} border px-4 py-3 rounded">
+                ${alertText}
+              </div>
+            `;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check reputation:', err);
+      }
+    }
+
+    downloadBtn.addEventListener('click', async () => {
+      const fileInput = document.getElementById('contractFile');
+      if (!fileInput.files.length) {
+        alert('Please upload a file first.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('role', document.getElementById('role').value);
+      formData.append('risk_tolerance', document.getElementById('risk_tolerance').value);
+
+      try {
+        downloadBtn.disabled = true; analyzeBtn.disabled = true;
+        statusEl.textContent = 'Generating PDF…';
+
+        const resp = await fetch('http://127.0.0.1:8000/analyze_pdf', {
+          method: 'POST',
+          body: formData
+        });
+        if (!resp.ok) {
+          statusEl.textContent = '';
+          alert('Failed to generate PDF');
+          return;
+        }
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'contract_analysis.pdf';
+        document.body.appendChild(a); a.click();
+        a.remove(); URL.revokeObjectURL(url);
+        statusEl.textContent = '';
+      } catch (err) {
+        statusEl.textContent = '';
+        alert('Error downloading PDF: ' + err.message);
+      } finally {
+        downloadBtn.disabled = false; analyzeBtn.disabled = false;
+      }
+    });
+
+    // Reputation tracker functionality
+    async function loadEntities() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/entities');
+        if (response.ok) {
+          const data = await response.json();
+          displayEntities(data.entities);
+        } else {
+          console.error('Failed to load entities');
+        }
+      } catch (err) {
+        console.error('Error loading entities:', err);
+      }
+    }
+
+    function displayEntities(entities) {
+      const entitiesListEl = document.getElementById('entitiesList');
+      
+      if (entities.length === 0) {
+        entitiesListEl.innerHTML = `
+          <div class="p-6 text-center text-gray-500">
+            <p>No entities found. Analyze some contracts to start building your reputation database.</p>
+          </div>
+        `;
+        return;
+      }
+
+      entitiesListEl.innerHTML = entities.map(entity => {
+        let riskBadge = '';
+        let riskColor = '';
+        
+        if (entity.reputation_score < 40) {
+          riskBadge = 'High Risk';
+          riskColor = 'bg-red-100 text-red-800';
+        } else if (entity.reputation_score < 70) {
+          riskBadge = 'Medium Risk';
+          riskColor = 'bg-yellow-100 text-yellow-800';
+        } else {
+          riskBadge = 'Low Risk';
+          riskColor = 'bg-green-100 text-green-800';
+        }
+
+        return `
+          <div class="p-6 hover:bg-gray-50 cursor-pointer" onclick="showEntityDetails('${entity.id}')">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="text-lg font-medium text-gray-900">${entity.name}</h3>
+                <p class="text-sm text-gray-500 capitalize">${entity.entity_type}${entity.industry ? ` • ${entity.industry}` : ''}</p>
+              </div>
+              <div class="text-right">
+                <div class="flex items-center space-x-3">
+                  <span class="text-2xl font-bold text-gray-900">${entity.reputation_score}</span>
+                  <div>
+                    <span class="${riskColor} px-2 py-1 rounded-full text-xs font-medium">${riskBadge}</span>
+                    <p class="text-sm text-gray-500 mt-1">${entity.total_contracts} contracts</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function showEntityDetails(entityId) {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/entity/${entityId}`);
+        if (response.ok) {
+          const data = await response.json();
+          displayEntityModal(data);
+        }
+      } catch (err) {
+        console.error('Error loading entity details:', err);
+      }
+    }
+
+    function displayEntityModal(data) {
+      const modal = document.getElementById('entityModal');
+      const title = document.getElementById('entityModalTitle');
+      const content = document.getElementById('entityModalContent');
+
+      title.textContent = `${data.entity.name} - Reputation Details`;
+
+      const metrics = data.performance_metrics;
+      content.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-lg font-semibold mb-3">Entity Information</h3>
+            <div class="space-y-2">
+              <p><strong>Name:</strong> ${data.entity.name}</p>
+              <p><strong>Type:</strong> ${data.entity.entity_type}</p>
+              <p><strong>Industry:</strong> ${data.entity.industry || 'Not specified'}</p>
+              <p><strong>Reputation Score:</strong> <span class="text-2xl font-bold">${data.entity.reputation_score}/100</span></p>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold mb-3">Performance Metrics</h3>
+            <div class="space-y-2">
+              <p><strong>Total Contracts:</strong> ${metrics.total_contracts}</p>
+              <p><strong>Success Rate:</strong> ${metrics.success_rate}%</p>
+              <p><strong>Dispute Rate:</strong> ${metrics.dispute_rate}%</p>
+              <p><strong>Termination Rate:</strong> ${metrics.termination_rate}%</p>
+              <p><strong>Pending Contracts:</strong> ${metrics.pending_contracts}</p>
+              <p><strong>Avg Red Flags:</strong> ${metrics.avg_red_flags}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-lg font-semibold mb-3">Contract History</h3>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">File</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Outcome</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Red Flags</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                ${data.contracts.map(contract => `
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${contract.contract_filename}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <select onchange="updateContractOutcome('${contract.id}', this.value)" class="text-sm border rounded p-1">
+                        <option value="Pending" ${contract.outcome === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Successful Completion" ${contract.outcome === 'Successful Completion' ? 'selected' : ''}>Successful Completion</option>
+                        <option value="Early Termination" ${contract.outcome === 'Early Termination' ? 'selected' : ''}>Early Termination</option>
+                        <option value="Dispute" ${contract.outcome === 'Dispute' ? 'selected' : ''}>Dispute</option>
+                        <option value="Litigation" ${contract.outcome === 'Litigation' ? 'selected' : ''}>Litigation</option>
+                      </select>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${contract.red_flags_count}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(contract.created_at).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                      <button onclick="downloadReport('${data.entity.id}')" class="hover:text-blue-800">Report</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    async function updateContractOutcome(contractId, outcome) {
+      try {
+        const formData = new FormData();
+        formData.append('outcome', outcome);
+        
+        const response = await fetch(`http://127.0.0.1:8000/contract/${contractId}/outcome`, {
+          method: 'PUT',
+          body: formData
+        });
+
+        if (response.ok) {
+          alert('Contract outcome updated successfully');
+          // Refresh the modal data
+          const modal = document.getElementById('entityModal');
+          if (!modal.classList.contains('hidden')) {
+            // Find the entity ID from the current modal and refresh
+            loadEntities();
+          }
+        } else {
+          alert('Failed to update contract outcome');
+        }
+      } catch (err) {
+        console.error('Error updating contract outcome:', err);
+        alert('Error updating contract outcome');
+      }
+    }
+
+    async function downloadReport(entityId) {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/reputation/report/${entityId}`);
+        if (response.ok) {
+          const report = await response.json();
+          
+          // Create a simple text report for download
+          const reportText = `
+REPUTATION REPORT
+Entity: ${report.entity.name}
+Type: ${report.entity.entity_type}
+Industry: ${report.entity.industry || 'Not specified'}
+
+SUMMARY
+Total Contracts: ${report.summary.total_contracts}
+Reputation Score: ${report.summary.reputation_score}/100
+Risk Assessment: ${report.summary.risk_assessment}
+
+RECOMMENDATIONS
+${report.recommendations.map(rec => `• ${rec}`).join('\n')}
+
+CONTRACT HISTORY
+${report.contract_history.map(c => `
+File: ${c.contract_filename}
+Outcome: ${c.outcome}
+Red Flags: ${c.red_flags_count}
+Date: ${new Date(c.created_at).toLocaleDateString()}
+${c.notes ? `Notes: ${c.notes}` : ''}
+`).join('\n---\n')}
+          `.trim();
+
+          const blob = new Blob([reportText], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${report.entity.name}_reputation_report.txt`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
+      } catch (err) {
+        console.error('Error downloading report:', err);
+        alert('Error downloading report');
+      }
+    }
+
+    // Modal close functionality
+    document.getElementById('closeModal').addEventListener('click', () => {
+      const modal = document.getElementById('entityModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    // Search functionality
+    document.getElementById('searchBtn').addEventListener('click', async () => {
+      const query = document.getElementById('searchQuery').value;
+      const outcome = document.getElementById('filterOutcome').value;
+      const risk = document.getElementById('filterRisk').value;
+
+      try {
+        const params = new URLSearchParams();
+        if (query) params.append('query', query);
+        if (outcome) params.append('outcome', outcome);
+        if (risk) params.append('risk_level', risk);
+
+        const response = await fetch(`http://127.0.0.1:8000/entities/search?${params}`);
+        if (response.ok) {
+          const data = await response.json();
+          displayEntities(data.results.map(r => r.entity));
+        }
+      } catch (err) {
+        console.error('Error searching entities:', err);
+      }
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      document.getElementById('searchQuery').value = '';
+      document.getElementById('filterOutcome').value = '';
+      document.getElementById('filterRisk').value = '';
+      loadEntities();
+    });
+  </script>
+</body>
+</html>
