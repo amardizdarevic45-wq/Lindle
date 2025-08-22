@@ -14,6 +14,8 @@ export default function Home() {
         <nav className="hidden md:flex space-x-8 text-black">
           <a href="#" className="hover:underline">Features</a>
           <Link href="/pricing" className="hover:underline">Pricing</Link>
+          <Link href="/analyze" className="hover:underline">Analyze</Link>
+          <Link href="/waitinglist" className="hover:underline">Join Waiting List</Link>
           <a href="#" className="hover:underline">Contact</a>
         </nav>
       </header>
@@ -27,12 +29,20 @@ export default function Home() {
             One companion.<br />
             <span className="text-blue-600">Smart. Clear. Fun.</span>
           </h1>
-          <Link
-            href="/analyze"
-            className="inline-block bg-blue-600 text-white text-lg font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition"
-          >
-            Get Started
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link
+              href="/analyze"
+              className="inline-block bg-blue-600 text-white text-lg font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition text-center"
+            >
+              Get Started
+            </Link>
+            <Link
+              href="/waitinglist"
+              className="inline-block bg-transparent border-2 border-blue-600 text-blue-600 text-lg font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 hover:text-white transition text-center"
+            >
+              Join Waiting List
+            </Link>
+          </div>
         </div>
         {/* Image */}
         <div className="flex-1 flex justify-center items-start md:mt-[-50px]">
