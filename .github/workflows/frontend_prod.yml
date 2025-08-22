@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  API_URL: 'https://yca-ca-backend-729811640717.europe-central2.run.app'
+  API_URL: 'https://lindle-backend-946555989276.europe-central2.run.app'
   ENVIRONMENT: 'production'   # or true/false as needed
   VERCEL_TOKEN: IGjct5AysIG9HjkhxcLN33Pi 
   VERCEL_PROJECT_ID: prj_voOiBAFKm8q3huoNwnEOXvny935s
