@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths: 
-      - 'frontend/**'
+      - 'Frontend/**'
       - '.github/workflows/frontend_prod.yml'
   workflow_dispatch:
 
@@ -23,7 +23,7 @@ jobs:
 
       - uses: microsoft/variable-substitution@v1
         with:
-          files: 'frontend/config.json'
+          files: 'Frontend/config.json'
         env:
           apps.API.url: ${{ env.API_URL }}
 
@@ -35,7 +35,7 @@ jobs:
           echo "NEXT_PUBLIC_ENVIRONMENT=prod" >> $GITHUB_ENV
 
       - name: Change Directory
-        run: cd frontend
+        run: cd Frontend
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
         
