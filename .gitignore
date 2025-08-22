@@ -12,6 +12,13 @@ __pycache__/
 # Data files
 data/
 
+# Node.js dependencies and build files
+node_modules/
+Frontend/node_modules/
+Frontend/build/
+Frontend/.npm
+Frontend/package-lock.json
+
 # OS files
 .DS_Store
 Thumbs.db
