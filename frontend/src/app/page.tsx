@@ -13,7 +13,7 @@ export default function Home() {
         {/* Nav Links */}
         <nav className="hidden md:flex space-x-8 text-black">
           <a href="#" className="hover:underline">Features</a>
-          <a href="#" className="hover:underline">Pricing</a>
+          <Link href="/pricing" className="hover:underline">Pricing</Link>
           <a href="#" className="hover:underline">Contact</a>
         </nav>
       </header>
