@@ -46,7 +46,7 @@ jobs:
 
       - name: Pull + Build + Deploy Vercel
         run: |
-          cd frontend
+          cd Frontend
           vercel pull --yes --environment=production --token=${{ env.VERCEL_TOKEN }}
           VERCEL_BUILDER_OVERRIDE=npm vercel build --prod --token=${{ env.VERCEL_TOKEN }}
           vercel deploy --prebuilt --prod --token=${{ env.VERCEL_TOKEN }}
