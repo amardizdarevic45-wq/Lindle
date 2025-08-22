@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Header from "../../components/Header";
 
 export default function PricingPage() {
   const plans = [
@@ -73,31 +74,18 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className="bg-white font-sans">
+    <div className="bg-white font-sans min-h-screen flex flex-col">
       {/* Navigation */}
-      <header className="flex items-center justify-between max-w-6xl mx-auto py-2 px-4">
-        {/* Logo */}
-        <div className="flex items-center space-x-2">
-          <Link href="/">
-            <Image src="/lindle-logo.png" alt="Lindle Logo" width={304} height={144} className="w-76 h-36" />
-          </Link>
-        </div>
-        {/* Nav Links */}
-        <nav className="hidden md:flex space-x-8 text-black">
-          <a href="#" className="hover:underline">Features</a>
-          <Link href="/pricing" className="hover:underline text-blue-600 font-semibold">Pricing</Link>
-          <a href="#" className="hover:underline">Contact</a>
-        </nav>
-      </header>
+      <Header />
 
       {/* Pricing Section */}
-      <section className="max-w-6xl mx-auto px-4 py-12">
+      <section className="max-w-6xl mx-auto px-4 py-12 flex-grow">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800">
             Simple, transparent pricing
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
             Choose the perfect plan for your contract review needs. Start with our free plan and upgrade as you grow.
           </p>
         </div>
@@ -122,15 +110,15 @@ export default function PricingPage() {
               )}
               
               <div className="text-center">
-                <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                <h3 className="text-xl font-bold mb-2 text-gray-800">{plan.name}</h3>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">{plan.price}</span>
-                  <span className="text-gray-500">{plan.period}</span>
+                  <span className="text-3xl font-bold text-gray-800">{plan.price}</span>
+                  <span className="text-gray-600">{plan.period}</span>
                   {plan.yearlyPrice && (
-                    <div className="text-sm text-gray-500 mt-1">or {plan.yearlyPrice}</div>
+                    <div className="text-sm text-gray-600 mt-1">or {plan.yearlyPrice}</div>
                   )}
                 </div>
-                <p className="text-gray-600 text-sm mb-6">{plan.description}</p>
+                <p className="text-gray-700 text-sm mb-6">{plan.description}</p>
               </div>
 
               <ul className="space-y-3 mb-8">
@@ -139,7 +127,7 @@ export default function PricingPage() {
                     <svg className="h-5 w-5 text-green-500 flex-shrink-0 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-sm text-gray-600">{feature}</span>
+                    <span className="text-sm text-gray-700">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -155,39 +143,36 @@ export default function PricingPage() {
 
         {/* Additional Info */}
         <div className="mt-16 text-center">
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-700 mb-4">
             All plans include a 14-day free trial. No credit card required.
-          </p>
-          <p className="text-sm text-gray-500">
-            Serving 70+ million freelancers worldwide with smart contract analysis
           </p>
         </div>
 
         {/* FAQ Section */}
         <div className="mt-20">
-          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Frequently Asked Questions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div>
-              <h3 className="font-semibold mb-2">What&apos;s included in the free plan?</h3>
-              <p className="text-gray-600 text-sm">
+              <h3 className="font-semibold mb-2 text-gray-800">What&apos;s included in the free plan?</h3>
+              <p className="text-gray-700 text-sm">
                 You get 2 complete contract reviews every 6 months, including clause summaries and red flag detection.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Can I switch plans anytime?</h3>
-              <p className="text-gray-600 text-sm">
+              <h3 className="font-semibold mb-2 text-gray-800">Can I switch plans anytime?</h3>
+              <p className="text-gray-700 text-sm">
                 Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">What types of contracts can I analyze?</h3>
-              <p className="text-gray-600 text-sm">
+              <h3 className="font-semibold mb-2 text-gray-800">What types of contracts can I analyze?</h3>
+              <p className="text-gray-700 text-sm">
                 All plans support freelance contracts, NDAs, service agreements, and most business contracts.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Is my data secure?</h3>
-              <p className="text-gray-600 text-sm">
+              <h3 className="font-semibold mb-2 text-gray-800">Is my data secure?</h3>
+              <p className="text-gray-700 text-sm">
                 Absolutely. We use enterprise-grade encryption and never share your contract data with third parties.
               </p>
             </div>
@@ -196,7 +181,7 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-100 text-center py-4 mt-12">
+      <footer className="bg-gray-100 text-center py-4 mt-auto">
         <p className="text-sm text-gray-600">
           © 2025 Lindle. All rights reserved.
         </p>

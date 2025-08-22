@@ -1,8 +1,6 @@
 import { GoogleAuthProvider, getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-//23.02.2025 -> INTEGRATE WITH GA
-//import { getAnalytics } from "firebase/analytics";
 import config from "../config.json";
 
 const firebaseConfig = {
