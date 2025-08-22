@@ -129,50 +129,83 @@ export default function AnalyzePage() {
           </p>
         </div>
 
-        <form onSubmit={handleAnalyze} className="bg-white p-6 rounded-lg shadow-md space-y-4">
-          <input
-            type="file"
-            accept=".pdf,.docx,.txt"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-700"
-            required
-          />
+        <form onSubmit={handleAnalyze} className="bg-white p-6 rounded-lg shadow-md space-y-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Contract File</label>
+            <div className="relative">
+              <input
+                type="file"
+                accept=".pdf,.docx,.txt"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-gray-700 border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                required
+              />
+              {file && (
+                <div className="mt-2 flex items-center text-sm text-green-600">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  {file.name}
+                </div>
+              )}
+            </div>
+          </div>
 
-          <label htmlFor="role" className="block text-sm font-medium">
-            Your Role
-          </label>
-          <select
-            id="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="block w-full border rounded p-2"
-          >
-            <option value="freelancer">Freelancer</option>
-            <option value="consultant">Consultant</option>
-            <option value="agency">Agency</option>
-          </select>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">Your Role</label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: 'freelancer', label: 'Freelancer' },
+                { value: 'consultant', label: 'Consultant' },
+                { value: 'agency', label: 'Agency' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setRole(option.value)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border-2 ${
+                    role === option.value
+                      ? 'bg-blue-100 border-blue-500 text-blue-700 shadow-md'
+                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <label htmlFor="risk_tolerance" className="block text-sm font-medium">
-            Risk Tolerance
-          </label>
-          <select
-            id="risk_tolerance"
-            value={riskTolerance}
-            onChange={(e) => setRiskTolerance(e.target.value)}
-            className="block w-full border rounded p-2"
-          >
-            <option value="cautious">Cautious</option>
-            <option value="standard">Standard</option>
-            <option value="bold">Bold</option>
-          </select>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">Risk Tolerance</label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: 'cautious', label: 'Cautious' },
+                { value: 'standard', label: 'Standard' },
+                { value: 'bold', label: 'Bold' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setRiskTolerance(option.value)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border-2 ${
+                    riskTolerance === option.value
+                      ? 'bg-emerald-100 border-emerald-500 text-emerald-700 shadow-md'
+                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-600'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 justify-center">
+          <div className="flex justify-center pt-2">
             <button
               type="submit"
               disabled={isAnalyzing}
-              className="bg-blue-600 text-white px-8 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              Analyze Contract
+              {isAnalyzing ? 'Analyzing...' : 'Analyze Contract'}
             </button>
           </div>
           {status && <p className="text-sm text-gray-500">{status}</p>}
@@ -217,14 +250,14 @@ export default function AnalyzePage() {
               className="w-76 h-36" 
             />
             <h2 className="mb-4 text-2xl font-bold text-[#0066FF]">Download Your Review</h2>
-            <div className="grid grid-cols-1 justify-center">
+            <div className="flex justify-center">
               <button
                 type="button"
                 onClick={handleDownloadPdf}
                 disabled={isDownloading}
-                className="bg-emerald-600 text-white px-6 py-3 rounded hover:bg-emerald-700 disabled:opacity-50"
+                className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
               >
-                Download PDF
+                {isDownloading ? 'Generating PDF...' : 'Download PDF'}
               </button>
             </div>
           </div>
