@@ -12,6 +12,8 @@ export default function Home() {
         </div>
         {/* Nav Links */}
         <nav className="hidden md:flex space-x-8 text-black">
+          <a href="#" className="hover:underline">Features</a>
+          <Link href="/pricing" className="hover:underline">Pricing</Link>
           <Link href="/analyze" className="hover:underline">Analyze</Link>
           <Link href="/waitinglist" className="hover:underline">Join Waiting List</Link>
           <a href="#" className="hover:underline">Contact</a>
