@@ -203,10 +203,9 @@ export default function WaitingListPage() {
         <div className="max-w-2xl mx-auto py-10 px-4">
           <div className="text-center mb-8">
             <p className="text-lg text-gray-600 mb-6">
-              Be the first to know when Lindle is ready to revolutionize your contract analysis experience.
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold text-blue-900 mb-3">🚀 Early Access Benefits</h2>
+              <h2 className="text-xl font-semibold text-blue-900 mb-3">🚀 Join Early Adapters</h2>
               <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
                 <div className="flex items-start space-x-2">
                   <span className="text-blue-600 font-bold">✓</span>

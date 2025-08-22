@@ -7,7 +7,7 @@ export default function Header() {
       {/* Logo */}
       <div className="flex items-start -mt-2 -ml-2">
         <Link href="/">
-          <Image src="/lindle-logo.png" alt="Lindle Logo" width={200} height={120} className="" />
+          <Image src="/lindle-logo-transparent.png" alt="Lindle Logo" width={200} height={120} className="" />
         </Link>
       </div>
       {/* Nav Links */}
