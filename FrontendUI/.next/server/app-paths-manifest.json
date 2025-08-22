@@ -1,8 +1,1 @@
-{
-  "/not-found": "app/not-found.js",
-  "/page": "app/page.js",
-  "/reputation/page": "app/reputation/page.js",
-  "/pricing/page": "app/pricing/page.js",
-  "/analyze/page": "app/analyze/page.js",
-  "/waitinglist/page": "app/waitinglist/page.js"
-}
+{}
