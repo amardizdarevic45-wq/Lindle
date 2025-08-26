@@ -205,7 +205,7 @@ export default function WaitingListPage() {
             <p className="text-lg text-gray-600 mb-6">
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold text-blue-900 mb-3">🚀 Join Early Adapters</h2>
+              <h2 className="text-xl font-semibold text-blue-900 mb-3">🚀 Join Early Adopters</h2>
               <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
                 <div className="flex items-start space-x-2">
                   <span className="text-blue-600 font-bold">✓</span>
