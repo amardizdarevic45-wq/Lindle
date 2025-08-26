@@ -49,6 +49,13 @@ frontend/out/
 frontend/build/
 frontend/.env.local
 
+# Frontend build files
+Frontend/node_modules/
+Frontend/.next/
+Frontend/out/
+Frontend/build/
+Frontend/.env.local
+
 # OS
 .DS_Store
 .DS_Store?
