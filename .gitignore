@@ -48,6 +48,8 @@ frontend/.next/
 frontend/out/
 frontend/build/
 frontend/.env.local
+Frontend/.next/
+Frontend/out/
 
 # OS
 .DS_Store
