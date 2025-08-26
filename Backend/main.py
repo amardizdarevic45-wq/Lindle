@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes.health import router as health_router
 from routes.analysis import router as analysis_router
+from routes.vault import router as vault_router
 
 
 
@@ -41,3 +42,4 @@ app.add_middleware(
 # Include routers
 app.include_router(health_router, tags=["Health"])
 app.include_router(analysis_router, tags=["Analysis"])
+app.include_router(vault_router, tags=["Vault"])

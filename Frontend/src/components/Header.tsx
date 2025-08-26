@@ -13,6 +13,7 @@ export default function Header() {
       {/* Nav Links */}
       <nav className="hidden md:flex space-x-8 text-black pt-2 pr-2 mt-6">
         <Link href="/analyze" className="hover:underline">Analyze</Link>
+        <Link href="/vault" className="hover:underline">Vault</Link>
         <Link href="/reputation" className="hover:underline">Reputation</Link>
         <Link href="/pricing" className="hover:underline">Subscription</Link>
       </nav>
