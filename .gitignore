@@ -16,6 +16,7 @@ data/
 node_modules/
 Frontend/node_modules/
 Frontend/build/
+Frontend/.next/
 Frontend/.npm
 Frontend/package-lock.json
 
