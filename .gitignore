@@ -16,6 +16,7 @@ data/
 node_modules/
 Frontend/node_modules/
 Frontend/build/
+Frontend/.next/
 Frontend/.npm
 Frontend/package-lock.json
 
@@ -48,6 +49,8 @@ frontend/.next/
 frontend/out/
 frontend/build/
 frontend/.env.local
+Frontend/.next/
+Frontend/out/
 
 # OS
 .DS_Store
