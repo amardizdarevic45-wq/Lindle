@@ -1,3 +1,7 @@
+
+
+
+
 # Virtual environments
 .venv/
 venv/
@@ -51,6 +55,8 @@ frontend/build/
 frontend/.env.local
 Frontend/.next/
 Frontend/out/
+
+Terraform/API/sakey.json
 
 # OS
 .DS_Store
