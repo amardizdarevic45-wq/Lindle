@@ -1,3 +1,7 @@
+
+
+
+
 # Virtual environments
 .venv/
 venv/
@@ -15,6 +19,7 @@ data/
 # Node.js dependencies and build files
 node_modules/
 Frontend/node_modules/
+Frontend/.next/
 Frontend/build/
 Frontend/.next/
 Frontend/.npm
@@ -49,6 +54,10 @@ frontend/.next/
 frontend/out/
 frontend/build/
 frontend/.env.local
+Frontend/.next/
+Frontend/out/
+
+Terraform/API/sakey.json
 
 # OS
 .DS_Store

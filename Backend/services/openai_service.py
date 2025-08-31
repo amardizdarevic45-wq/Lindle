@@ -13,8 +13,8 @@ except Exception as e:
     raise RuntimeError("OpenAI SDK not installed. Run: pip install openai")
 
 # OpenAI configuration
-_API_KEY = os.getenv("OPENAI_API_KEY", "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")
-_PROJECT = os.getenv("OPENAI_PROJECT", "proj_8eJUMAtb5CluAQkaxcpES4op")
+_API_KEY = os.getenv("OPENAI_API_KEY")
+_PROJECT = os.getenv("OPENAI_PROJECT")
 
 def _get_openai_client():
     """Get OpenAI client instance."""

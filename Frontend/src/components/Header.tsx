@@ -11,16 +11,13 @@ export default function Header() {
           <Image src="/lindle-logo-transparent.png" alt="Lindle Logo" width={200} height={120} className="" />
         </Link>
       </div>
-      {/* Nav Links and Auth */}
-      <div className="flex items-center space-x-8 pt-2 pr-2 mt-6">
-        <nav className="hidden md:flex space-x-8 text-black">
-          <Link href="/analyze" className="hover:underline">Analyze</Link>
-          <Link href="/contracts" className="hover:underline">My Contracts</Link>
-          <Link href="/reputation" className="hover:underline">Reputation</Link>
-          <Link href="/pricing" className="hover:underline">Subscription</Link>
-        </nav>
-        <AuthButton />
-      </div>
+      <nav className="hidden md:flex space-x-8 text-black pt-2 pr-2 mt-6">
+        <Link href="/analyze" className="hover:underline">Analyze</Link>
+        <Link href="/vault" className="hover:underline">Vault</Link>
+        <Link href="/contracts" className="hover:underline">My Contracts</Link>
+        <Link href="/reputation" className="hover:underline">Reputation</Link>
+        <Link href="/pricing" className="hover:underline">Subscription</Link>
+      </nav>
     </header>
   );
 } 
