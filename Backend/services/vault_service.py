@@ -6,7 +6,11 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from models.vault import VaultData, ContractorInfo, SharingSettings
+from models.vault import (
+    VaultData, ClauseCategory, Clause, SharingSettings, 
+    PreferenceLevel, ClauseCreateRequest, ClauseUpdateRequest,
+    CategoryCreateRequest, CategoryUpdateRequest
+)
 
 
 # Data directory and file paths
@@ -50,9 +54,7 @@ def get_vault_by_user_id(user_id: str) -> Optional[VaultData]:
 
 def create_or_update_vault(
     user_id: str,
-    stake: Optional[str] = None,
-    availability: Optional[str] = None,
-    potential_contractors: Optional[List[ContractorInfo]] = None,
+    clause_categories: Optional[List[ClauseCategory]] = None,
     sharing_settings: Optional[SharingSettings] = None
 ) -> VaultData:
     """Create a new vault or update existing one for a user."""
@@ -73,21 +75,18 @@ def create_or_update_vault(
         # Update existing vault
         updated_vault = VaultData(
             user_id=user_id,
-            stake=stake if stake is not None else existing_vault.stake,
-            availability=availability if availability is not None else existing_vault.availability,
-            potential_contractors=potential_contractors if potential_contractors is not None else existing_vault.potential_contractors,
+            clause_categories=clause_categories if clause_categories is not None else existing_vault.clause_categories,
             sharing_settings=sharing_settings if sharing_settings is not None else existing_vault.sharing_settings,
             created_at=existing_vault.created_at,
             updated_at=current_time
         )
         vaults[vault_index] = updated_vault
     else:
-        # Create new vault
+        # Create new vault with default categories
+        default_categories = _create_default_categories()
         updated_vault = VaultData(
             user_id=user_id,
-            stake=stake or "",
-            availability=availability or "",
-            potential_contractors=potential_contractors or [],
+            clause_categories=clause_categories or default_categories,
             sharing_settings=sharing_settings or SharingSettings(),
             created_at=current_time,
             updated_at=current_time
@@ -96,6 +95,312 @@ def create_or_update_vault(
     
     save_vaults(vaults)
     return updated_vault
+
+
+def _create_default_categories() -> List[ClauseCategory]:
+    """Create default clause categories for a new vault."""
+    current_time = datetime.now().isoformat()
+    
+    default_categories = [
+        ClauseCategory(
+            id=str(uuid.uuid4()),
+            name="Payment Terms",
+            description="Clauses related to payment schedules, invoicing, and financial terms",
+            clauses=[],
+            created_at=current_time,
+            updated_at=current_time
+        ),
+        ClauseCategory(
+            id=str(uuid.uuid4()),
+            name="Termination",
+            description="Clauses related to contract termination conditions and procedures",
+            clauses=[],
+            created_at=current_time,
+            updated_at=current_time
+        ),
+        ClauseCategory(
+            id=str(uuid.uuid4()),
+            name="Liability",
+            description="Clauses related to liability limitations and indemnification",
+            clauses=[],
+            created_at=current_time,
+            updated_at=current_time
+        ),
+        ClauseCategory(
+            id=str(uuid.uuid4()),
+            name="Intellectual Property",
+            description="Clauses related to IP ownership, licensing, and protection",
+            clauses=[],
+            created_at=current_time,
+            updated_at=current_time
+        ),
+        ClauseCategory(
+            id=str(uuid.uuid4()),
+            name="Confidentiality",
+            description="Clauses related to non-disclosure and confidentiality",
+            clauses=[],
+            created_at=current_time,
+            updated_at=current_time
+        )
+    ]
+    
+    return default_categories
+
+
+def add_category_to_vault(user_id: str, request: CategoryCreateRequest) -> ClauseCategory:
+    """Add a new category to a user's vault."""
+    vault = get_vault_by_user_id(user_id)
+    if not vault:
+        raise ValueError("Vault not found for user")
+    
+    current_time = datetime.now().isoformat()
+    new_category = ClauseCategory(
+        id=str(uuid.uuid4()),
+        name=request.name,
+        description=request.description,
+        clauses=[],
+        created_at=current_time,
+        updated_at=current_time
+    )
+    
+    vault.clause_categories.append(new_category)
+    vault.updated_at = current_time
+    
+    # Save the updated vault
+    vaults = load_vaults()
+    for i, v in enumerate(vaults):
+        if v.user_id == user_id:
+            vaults[i] = vault
+            break
+    
+    save_vaults(vaults)
+    return new_category
+
+
+def update_category(user_id: str, category_id: str, request: CategoryUpdateRequest) -> ClauseCategory:
+    """Update an existing category in a user's vault."""
+    vault = get_vault_by_user_id(user_id)
+    if not vault:
+        raise ValueError("Vault not found for user")
+    
+    category = None
+    for cat in vault.clause_categories:
+        if cat.id == category_id:
+            category = cat
+            break
+    
+    if not category:
+        raise ValueError("Category not found")
+    
+    current_time = datetime.now().isoformat()
+    
+    # Update category fields if provided
+    if request.name is not None:
+        category.name = request.name
+    if request.description is not None:
+        category.description = request.description
+    
+    category.updated_at = current_time
+    vault.updated_at = current_time
+    
+    # Save the updated vault
+    vaults = load_vaults()
+    for i, v in enumerate(vaults):
+        if v.user_id == user_id:
+            vaults[i] = vault
+            break
+    
+    save_vaults(vaults)
+    return category
+
+
+def delete_category(user_id: str, category_id: str) -> bool:
+    """Delete a category from a user's vault."""
+    vault = get_vault_by_user_id(user_id)
+    if not vault:
+        return False
+    
+    original_count = len(vault.clause_categories)
+    vault.clause_categories = [cat for cat in vault.clause_categories if cat.id != category_id]
+    
+    if len(vault.clause_categories) < original_count:
+        vault.updated_at = datetime.now().isoformat()
+        
+        # Save the updated vault
+        vaults = load_vaults()
+        for i, v in enumerate(vaults):
+            if v.user_id == user_id:
+                vaults[i] = vault
+                break
+        
+        save_vaults(vaults)
+        return True
+    return False
+
+
+def add_clause_to_category(user_id: str, category_id: str, request: ClauseCreateRequest) -> Clause:
+    """Add a new clause to a category in a user's vault."""
+    vault = get_vault_by_user_id(user_id)
+    if not vault:
+        raise ValueError("Vault not found for user")
+    
+    category = None
+    for cat in vault.clause_categories:
+        if cat.id == category_id:
+            category = cat
+            break
+    
+    if not category:
+        raise ValueError("Category not found")
+    
+    current_time = datetime.now().isoformat()
+    new_clause = Clause(
+        id=str(uuid.uuid4()),
+        title=request.title,
+        content=request.content,
+        tags=request.tags,
+        preference_level=request.preference_level,
+        created_at=current_time,
+        updated_at=current_time
+    )
+    
+    category.clauses.append(new_clause)
+    category.updated_at = current_time
+    vault.updated_at = current_time
+    
+    # Save the updated vault
+    vaults = load_vaults()
+    for i, v in enumerate(vaults):
+        if v.user_id == user_id:
+            vaults[i] = vault
+            break
+    
+    save_vaults(vaults)
+    return new_clause
+
+
+def update_clause(user_id: str, category_id: str, clause_id: str, request: ClauseUpdateRequest) -> Clause:
+    """Update an existing clause in a user's vault."""
+    vault = get_vault_by_user_id(user_id)
+    if not vault:
+        raise ValueError("Vault not found for user")
+    
+    category = None
+    for cat in vault.clause_categories:
+        if cat.id == category_id:
+            category = cat
+            break
+    
+    if not category:
+        raise ValueError("Category not found")
+    
+    clause = None
+    for cl in category.clauses:
+        if cl.id == clause_id:
+            clause = cl
+            break
+    
+    if not clause:
+        raise ValueError("Clause not found")
+    
+    current_time = datetime.now().isoformat()
+    
+    # Update clause fields if provided
+    if request.title is not None:
+        clause.title = request.title
+    if request.content is not None:
+        clause.content = request.content
+    if request.tags is not None:
+        clause.tags = request.tags
+    if request.preference_level is not None:
+        clause.preference_level = request.preference_level
+    
+    clause.updated_at = current_time
+    category.updated_at = current_time
+    vault.updated_at = current_time
+    
+    # Save the updated vault
+    vaults = load_vaults()
+    for i, v in enumerate(vaults):
+        if v.user_id == user_id:
+            vaults[i] = vault
+            break
+    
+    save_vaults(vaults)
+    return clause
+
+
+def delete_clause(user_id: str, category_id: str, clause_id: str) -> bool:
+    """Delete a clause from a category in a user's vault."""
+    vault = get_vault_by_user_id(user_id)
+    if not vault:
+        return False
+    
+    category = None
+    for cat in vault.clause_categories:
+        if cat.id == category_id:
+            category = cat
+            break
+    
+    if not category:
+        return False
+    
+    original_count = len(category.clauses)
+    category.clauses = [cl for cl in category.clauses if cl.id != clause_id]
+    
+    if len(category.clauses) < original_count:
+        category.updated_at = datetime.now().isoformat()
+        vault.updated_at = datetime.now().isoformat()
+        
+        # Save the updated vault
+        vaults = load_vaults()
+        for i, v in enumerate(vaults):
+            if v.user_id == user_id:
+                vaults[i] = vault
+                break
+        
+        save_vaults(vaults)
+        return True
+    return False
+
+
+def search_clauses(user_id: str, query: str = "", tags: List[str] = None, preference_level: PreferenceLevel = None) -> List[Clause]:
+    """Search for clauses in a user's vault based on query, tags, or preference level."""
+    vault = get_vault_by_user_id(user_id)
+    if not vault:
+        return []
+    
+    matching_clauses = []
+    query_lower = query.lower() if query else ""
+    
+    for category in vault.clause_categories:
+        for clause in category.clauses:
+            # Check if clause matches the search criteria
+            matches = True
+            
+            # Text search in title or content
+            if query_lower:
+                if (query_lower not in clause.title.lower() and 
+                    query_lower not in clause.content.lower()):
+                    matches = False
+            
+            # Tag filtering
+            if tags and matches:
+                clause_tags_lower = [tag.lower() for tag in clause.tags]
+                for tag in tags:
+                    if tag.lower() not in clause_tags_lower:
+                        matches = False
+                        break
+            
+            # Preference level filtering
+            if preference_level and matches:
+                if clause.preference_level != preference_level:
+                    matches = False
+            
+            if matches:
+                matching_clauses.append(clause)
+    
+    return matching_clauses
 
 
 def get_accessible_vaults(user_id: Optional[str] = None) -> List[VaultData]:
