@@ -54,8 +54,6 @@ frontend/.next/
 frontend/out/
 frontend/build/
 frontend/.env.local
-Frontend/.next/
-Frontend/out/
 
 Terraform/API/sakey.json
 
