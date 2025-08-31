@@ -17,6 +17,8 @@ export default function Header() {
         <Link href="/contracts" className="hover:underline">My Contracts</Link>
         <Link href="/reputation" className="hover:underline">Reputation</Link>
         <Link href="/pricing" className="hover:underline">Subscription</Link>
+        <Link href="/register" className="hover:underline">Register</Link>
+        <Link href="/login" className="hover:underline">Login</Link>
       </nav>
     </header>
   );

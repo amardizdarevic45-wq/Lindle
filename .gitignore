@@ -59,6 +59,13 @@ Frontend/out/
 
 Terraform/API/sakey.json
 
+# Frontend build files
+Frontend/node_modules/
+Frontend/.next/
+Frontend/out/
+Frontend/build/
+Frontend/.env.local
+
 # OS
 .DS_Store
 .DS_Store?
