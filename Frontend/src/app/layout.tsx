@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "../contexts/AuthContext";
+//import { AuthProvider } from "../contexts/AuthContext";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Lindle - AI-powered Contract Assistant",
