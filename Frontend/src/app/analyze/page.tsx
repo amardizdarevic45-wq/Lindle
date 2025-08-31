@@ -104,7 +104,14 @@ export default function AnalyzePage() {
       setStatus('Analyzing…');
 
       const apiUrl = config.apps.API.url || 'http://127.0.0.1:8000';
-      const response = await fetch(`${apiUrl}/analyze`, {
+      
+      // Use the new endpoint that saves to Firebase if user is authenticated
+      const endpoint = user ? '/analyze_with_user' : '/analyze';
+      if (user) {
+        formData.append('user_id', user.uid);
+      }
+      
+      const response = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',
         body: formData,
       });
@@ -117,9 +124,13 @@ export default function AnalyzePage() {
       setResult(data);
       setStatus('');
 
-      // Save both old and new format to Firebase
-      await saveAnalysisToFirebase(data, file.name);
-      await saveContractToFirebase(data, file.name);
+      // Only save to Firebase from frontend if not already saved by backend
+      if (!user) {
+        await saveAnalysisToFirebase(data, file.name);
+      } else {
+        // Show success message for authenticated users
+        alert('Contract analyzed and saved to your dashboard! You can view it in "My Contracts"');
+      }
 
     } catch (err) {
       setStatus('');

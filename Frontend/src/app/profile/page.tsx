@@ -1,25 +1,52 @@
 'use client';
 
-import { useAuth } from '../../contexts/AuthContext';
-import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../../firebase';
+import { useAuth } from '../../components/AuthProvider';
 import Header from '../../components/Header';
 import { useState, useEffect } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase';
+
+interface Contract {
+  id: string;
+  fileName: string;
+  status: 'draft' | 'negotiating' | 'signed in' | 'in progress' | 'completed';
+  role: string;
+  riskTolerance: string;
+  summary: string;
+  redFlags: string[];
+  pushbacks: string[];
+  tokensUsed?: number;
+  createdAt: string;
+  updatedAt?: string;
+  userId: string;
+  aiReminder?: string;
+  aiSuggestion?: string;
+}
 
 interface UserStats {
   totalContracts: number;
   pendingContracts: number;
   successfulContracts: number;
   averageScore: number;
+  draftContracts: number;
+  negotiatingContracts: number;
+  signedInContracts: number;
+  inProgressContracts: number;
+  completedContracts: number;
 }
 
 export default function Profile() {
-  const { user, loading } = useAuth();
+  const { user, loading, signIn } = useAuth();
   const [userStats, setUserStats] = useState<UserStats>({
     totalContracts: 0,
     pendingContracts: 0,
     successfulContracts: 0,
-    averageScore: 0
+    averageScore: 0,
+    draftContracts: 0,
+    negotiatingContracts: 0,
+    signedInContracts: 0,
+    inProgressContracts: 0,
+    completedContracts: 0
   });
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -29,21 +56,87 @@ export default function Profile() {
   });
 
   useEffect(() => {
-    // Load user statistics (mock data for now)
+    // Load user statistics from backend API
     if (user) {
-      // In a real app, this would fetch from your backend API
-      setUserStats({
-        totalContracts: 15,
-        pendingContracts: 3,
-        successfulContracts: 11,
-        averageScore: 85
-      });
+      fetchUserStats();
     }
   }, [user]);
 
+  const fetchUserStats = async () => {
+    if (!user) return;
+
+    try {
+      // Fetch contracts directly from Firebase like My Contracts page
+      const q = query(
+        collection(db, 'contracts'),
+        where('userId', '==', user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const contracts = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Contract[];
+
+      // Calculate statistics
+      const totalContracts = contracts.length;
+      const pendingContracts = contracts.filter(c => ['draft', 'negotiating'].includes(c.status)).length;
+      const successfulContracts = contracts.filter(c => c.status === 'completed').length;
+      
+      // Calculate average score
+      let totalScore = 0;
+      let scoredContracts = 0;
+      
+      contracts.forEach(contract => {
+        const redFlags = contract.redFlags ? contract.redFlags.length : 0;
+        const pushbacks = contract.pushbacks ? contract.pushbacks.length : 0;
+        
+        // Simple scoring: fewer red flags and pushbacks = higher score
+        const score = Math.max(0, 100 - (redFlags * 5) - (pushbacks * 3));
+        totalScore += score;
+        scoredContracts += 1;
+      });
+      
+      const averageScore = scoredContracts > 0 ? Math.round((totalScore / scoredContracts) * 10) / 10 : 0;
+      
+      // Count by status
+      const draftContracts = contracts.filter(c => c.status === 'draft').length;
+      const negotiatingContracts = contracts.filter(c => c.status === 'negotiating').length;
+      const signedInContracts = contracts.filter(c => c.status === 'signed in').length;
+      const inProgressContracts = contracts.filter(c => c.status === 'in progress').length;
+      const completedContracts = contracts.filter(c => c.status === 'completed').length;
+
+      setUserStats({
+        totalContracts,
+        pendingContracts,
+        successfulContracts,
+        averageScore,
+        draftContracts,
+        negotiatingContracts,
+        signedInContracts,
+        inProgressContracts,
+        completedContracts
+      });
+    } catch (error) {
+      console.error('Error fetching user stats from Firebase:', error);
+      // Fallback to default values if Firebase call fails
+      setUserStats({
+        totalContracts: 0,
+        pendingContracts: 0,
+        successfulContracts: 0,
+        averageScore: 0,
+        draftContracts: 0,
+        negotiatingContracts: 0,
+        signedInContracts: 0,
+        inProgressContracts: 0,
+        completedContracts: 0
+      });
+    }
+  };
+
   const handleSignIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signIn();
     } catch (error) {
       console.error('Error signing in:', error);
     }
@@ -194,12 +287,39 @@ export default function Profile() {
                 </div>
               </div>
 
+              {/* Detailed Status Breakdown */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Contract Status Breakdown</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="text-lg font-bold text-gray-600">{userStats.draftContracts}</div>
+                    <div className="text-xs text-gray-500">Draft</div>
+                  </div>
+                  <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                    <div className="text-lg font-bold text-yellow-600">{userStats.negotiatingContracts}</div>
+                    <div className="text-xs text-gray-500">Negotiating</div>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <div className="text-lg font-bold text-blue-600">{userStats.signedInContracts}</div>
+                    <div className="text-xs text-gray-500">Signed In</div>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <div className="text-lg font-bold text-purple-600">{userStats.inProgressContracts}</div>
+                    <div className="text-xs text-gray-500">In Progress</div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <div className="text-lg font-bold text-green-600">{userStats.completedContracts}</div>
+                    <div className="text-xs text-gray-500">Completed</div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
                   <a href="/analyze" className="block">Analyze New Contract</a>
                 </button>
                 <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-                  <a href="/reputation" className="block">View All Contracts</a>
+                  <a href="/contracts" className="block">View All Contracts</a>
                 </button>
               </div>
             </div>
