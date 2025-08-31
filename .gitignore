@@ -66,6 +66,12 @@ Frontend/out/
 Frontend/build/
 Frontend/.env.local
 
+# Frontend build artifacts
+Frontend/.next/
+Frontend/out/
+Frontend/build/
+Frontend/.env.local
+
 # OS
 .DS_Store
 .DS_Store?
