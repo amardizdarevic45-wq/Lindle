@@ -1,6 +1,9 @@
 # Lindle MVP 
 **All your contracts. One companion. Smart. Clear. Fun.**
-![Lindle Logo](Frontend/lindle-logo-transparent.png)
+<p align="left">
+  <img src="lindle-logo-transparent.png" alt="Lindle Logo" width="220"/>
+</p>
+
 **AI-powered contract assistant** for freelancers, consultants, and agencies.  
 Upload a contract and Lindle will instantly deliver:  
 - 📄 A **clear summary** of the document  

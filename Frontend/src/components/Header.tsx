@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
+import AuthButton from './AuthButton';
 
 export default function Header() {
   const { user, loading } = useAuth();
@@ -36,6 +37,8 @@ export default function Header() {
       {/* Nav Links */}
       <nav className="hidden md:flex items-center space-x-8 text-black pt-2 pr-2 mt-6">
         <Link href="/analyze" className="hover:underline">Analyze</Link>
+        <Link href="/vault" className="hover:underline">Vault</Link>
+        <Link href="/contracts" className="hover:underline">My Contracts</Link>
         <Link href="/reputation" className="hover:underline">Reputation</Link>
         <Link href="/pricing" className="hover:underline">Subscription</Link>
         
@@ -70,6 +73,8 @@ export default function Header() {
             )}
           </>
         )}
+        <Link href="/register" className="hover:underline">Register</Link>
+        <Link href="/login" className="hover:underline">Login</Link>
       </nav>
     </header>
   );
