@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Header from '../../components/Header';
+import { useAuth } from '../../components/AuthProvider';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import config from '../../../config.json'
@@ -15,6 +16,7 @@ interface AnalysisResult {
 }
 
 export default function AnalyzePage() {
+  const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [role, setRole] = useState('freelancer');
   const [riskTolerance, setRiskTolerance] = useState('standard');
@@ -22,6 +24,7 @@ export default function AnalyzePage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [status, setStatus] = useState('');
+  const [contractStatus, setContractStatus] = useState<'draft' | 'negotiating' | 'signed in' | 'in progress' | 'completed'>('draft');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -29,6 +32,38 @@ export default function AnalyzePage() {
     }
   };
 
+  const saveContractToFirebase = async (analysisData: AnalysisResult, fileName: string) => {
+    if (!user) {
+      console.log('User not authenticated, skipping Firebase save');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'contracts'), {
+        fileName: fileName,
+        role: role,
+        riskTolerance: riskTolerance,
+        summary: analysisData.summary,
+        redFlags: analysisData.red_flags,
+        pushbacks: analysisData.pushbacks,
+        tokensUsed: analysisData.tokens_used,
+        status: contractStatus,
+        userId: user.uid,
+        userEmail: user.email,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      console.log('Contract saved to Firebase successfully');
+      
+      // Show success message
+      alert('Contract analyzed and saved to your dashboard! You can view it in "My Contracts"');
+    } catch (error) {
+      console.error('Error saving contract to Firebase:', error);
+      // Don't throw error to avoid disrupting user experience
+    }
+  };
+
+  // Keep the old function for backward compatibility with existing analyses
   const saveAnalysisToFirebase = async (analysisData: AnalysisResult, fileName: string) => {
     try {
       await addDoc(collection(db, 'contractAnalyses'), {
@@ -41,6 +76,8 @@ export default function AnalyzePage() {
         tokensUsed: analysisData.tokens_used,
         timestamp: new Date(),
         createdAt: new Date().toISOString(),
+        userId: user?.uid || null,
+        userEmail: user?.email || null,
       });
       console.log('Analysis saved to Firebase successfully');
     } catch (error) {
@@ -80,8 +117,9 @@ export default function AnalyzePage() {
       setResult(data);
       setStatus('');
 
-      // Save analysis to Firebase
+      // Save both old and new format to Firebase
       await saveAnalysisToFirebase(data, file.name);
+      await saveContractToFirebase(data, file.name);
 
     } catch (err) {
       setStatus('');
@@ -227,6 +265,32 @@ export default function AnalyzePage() {
                     </div>
                   </div>
 
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">Contract Status</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: 'draft', label: 'Draft' },
+                        { value: 'negotiating', label: 'Negotiating' },
+                        { value: 'signed in', label: 'Signed In' },
+                        { value: 'in progress', label: 'In Progress' },
+                        { value: 'completed', label: 'Completed' }
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setContractStatus(option.value as any)}
+                          className={`px-3 py-2 rounded-full text-xs font-medium transition-all duration-200 backdrop-blur-sm ${
+                            contractStatus === option.value
+                              ? 'bg-purple-500/20 border-2 border-purple-400/50 text-purple-700 shadow-lg'
+                              : 'bg-white/50 border-2 border-white/30 text-gray-700 hover:bg-purple-50/70 hover:border-purple-300/50 hover:text-purple-600'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="flex justify-start pt-2">
                     <button
                       type="submit"
@@ -238,6 +302,24 @@ export default function AnalyzePage() {
                   </div>
                   {status && <p className="text-sm text-gray-500 text-left">{status}</p>}
                 </form>
+
+                {/* Authentication Notice */}
+                {!user && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mt-4">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Sign in to save your contracts!</strong> Without signing in, you can analyze contracts but won't be able to save them to your dashboard or track their progress.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* PDF Download Section */}
                 {result && (

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import AuthButton from './AuthButton';
 
 export default function Header() {
   return (
@@ -10,10 +11,10 @@ export default function Header() {
           <Image src="/lindle-logo-transparent.png" alt="Lindle Logo" width={200} height={120} className="" />
         </Link>
       </div>
-      {/* Nav Links */}
       <nav className="hidden md:flex space-x-8 text-black pt-2 pr-2 mt-6">
         <Link href="/analyze" className="hover:underline">Analyze</Link>
         <Link href="/vault" className="hover:underline">Vault</Link>
+        <Link href="/contracts" className="hover:underline">My Contracts</Link>
         <Link href="/reputation" className="hover:underline">Reputation</Link>
         <Link href="/pricing" className="hover:underline">Subscription</Link>
       </nav>
