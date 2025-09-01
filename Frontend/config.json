@@ -5,8 +5,8 @@
             "measurementId": ""
         },
         "API": {
-            "url": "https://lindle-backend-946555989276.europe-central2.run.app/",
-            "isProduction": true
+            "url": "http://127.0.0.1:8000",
+            "isProduction": false
         },
         "Firebase": {
             "apiKey": "AIzaSyCsNmlCJJMBohSqrLFs1itcf0CIu3u-4ic",
