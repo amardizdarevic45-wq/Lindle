@@ -6,11 +6,20 @@ import re
 from fastapi import HTTPException
 from models.analysis import AnalysisResponse
 
-# Import OpenAI client
+# Langfuse configuration
+from langfuse import Langfuse, observe
+
+langfuse = Langfuse(
+    secret_key="sk-lf-c737c80e-47d9-4f27-958c-c8de46832b1f",
+    public_key="pk-lf-206d5042-8320-4155-9e14-185bcc9ed231",
+    host="https://cloud.langfuse.com"
+)
+
+# Import Langfuse wrapped OpenAI client
 try:
-    from openai import OpenAI
+    from langfuse.openai import openai
 except Exception as e:
-    raise RuntimeError("OpenAI SDK not installed. Run: pip install openai")
+    raise RuntimeError("Langfuse not installed. Run: pip install langfuse")
 
 # OpenAI configuration
 _API_KEY = os.getenv("OPENAI_API_KEY")
@@ -20,7 +29,7 @@ def _get_openai_client():
     """Get OpenAI client instance."""
     if not _API_KEY:
         return None
-    return OpenAI(api_key=_API_KEY, project=_PROJECT) if _PROJECT else OpenAI(api_key=_API_KEY)
+    return openai.OpenAI(api_key=_API_KEY, project=_PROJECT) if _PROJECT else openai.OpenAI(api_key=_API_KEY)
 
 # Model configuration
 MODEL = os.getenv("LINDLE_MODEL", "gpt-4o-mini")
@@ -42,6 +51,7 @@ USER_PROMPT_TEMPLATE = (
 )
 
 
+@observe()
 def analyze_contract(contract_text: str, role: str, risk: str) -> AnalysisResponse:
     """Analyze contract text using OpenAI and return structured response."""
     if not _API_KEY:
