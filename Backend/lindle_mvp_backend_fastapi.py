@@ -39,6 +39,13 @@ _API_KEY = os.getenv("OPENAI_API_KEY")
 _PROJECT = os.getenv("OPENAI_PROJECT")  # optional for sk-proj keys
 client = OpenAI(api_key=_API_KEY, project=_PROJECT) if _PROJECT else OpenAI(api_key=_API_KEY)
 
+# ---------- Google Cloud Storage ----------
+try:
+    from services.gcs_service import gcs_service
+except Exception as e:
+    print(f"Warning: GCS service not available: {e}")
+    gcs_service = None
+
 # ---------- FastAPI ----------
 app = FastAPI(title="Lindle MVP API", version="0.4")
 app.add_middleware(
@@ -372,6 +379,18 @@ async def analyze(
     
     result = call_openai(text, role=role, risk=risk_tolerance)
     
+    # Upload file to Google Cloud Storage
+    gcs_file_path = None
+    if gcs_service:
+        gcs_file_path = gcs_service.upload_file(
+            file_content=content,
+            file_name=file.filename,
+            content_type=file.content_type
+        )
+        print(f"File uploaded to GCS: {gcs_file_path}")
+    else:
+        print("GCS service not available, skipping file upload")
+    
     # Store contract information if counterparty is identified
     if result.counterparty and result.counterparty_type:
         try:
@@ -411,7 +430,12 @@ async def analyze(
             # Don't fail the analysis if reputation tracking fails
             print(f"Warning: Failed to store reputation data: {e}")
     
-    return result
+    # Add GCS information to the result
+    result_dict = result.dict()
+    result_dict['gcs_file_path'] = gcs_file_path
+    result_dict['gcs_file_url'] = gcs_service.get_file_url(gcs_file_path) if gcs_file_path else None
+    
+    return result_dict
 
 
 @app.post("/analyze_pdf")
@@ -426,6 +450,19 @@ async def analyze_pdf(
         raise HTTPException(status_code=400, detail="Contract appears empty or too short.")
 
     result = call_openai(text, role=role, risk=risk_tolerance)
+    
+    # Upload file to Google Cloud Storage
+    gcs_file_path = None
+    if gcs_service:
+        gcs_file_path = gcs_service.upload_file(
+            file_content=content,
+            file_name=file.filename,
+            content_type=file.content_type
+        )
+        print(f"File uploaded to GCS during PDF generation: {gcs_file_path}")
+    else:
+        print("GCS service not available, skipping file upload")
+    
     pdf_bytes = build_pdf(result.summary, result.red_flags, result.pushbacks)
     headers = {"Content-Disposition": "attachment; filename=contract_analysis.pdf"}
     return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers=headers)

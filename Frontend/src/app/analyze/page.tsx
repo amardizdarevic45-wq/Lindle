@@ -13,6 +13,9 @@ interface AnalysisResult {
   red_flags: string[];
   pushbacks: string[];
   tokens_used?: number;
+  gcs_file_path?: string;
+  gcs_file_url?: string;
+  contract_id?: string;
 }
 
 export default function AnalyzePage() {
@@ -50,6 +53,8 @@ export default function AnalyzePage() {
         status: contractStatus,
         userId: user.uid,
         userEmail: user.email,
+        gcsFilePath: analysisData.gcs_file_path,  // Add GCS file path
+        gcsFileUrl: analysisData.gcs_file_url,    // Add GCS file URL
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -78,6 +83,8 @@ export default function AnalyzePage() {
         createdAt: new Date().toISOString(),
         userId: user?.uid || null,
         userEmail: user?.email || null,
+        gcsFilePath: analysisData.gcs_file_path,  // Add GCS file path
+        gcsFileUrl: analysisData.gcs_file_url,    // Add GCS file URL
       });
       console.log('Analysis saved to Firebase successfully');
     } catch (error) {
@@ -379,6 +386,27 @@ export default function AnalyzePage() {
                       ))}
                     </ul>
                   </div>
+
+                  {/* File Storage Information */}
+                  {result.gcs_file_url && (
+                    <div className="rounded-2xl border-l-4 border-[#6F42C1] bg-white/70 backdrop-blur-sm border border-white/30 p-6 shadow-xl">
+                      <h3 className="font-semibold text-lg mb-3 text-[#6F42C1]">Original File</h3>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600">
+                          <p>File stored securely in Google Cloud Storage</p>
+                          <p className="text-xs mt-1">ID: {result.gcs_file_path}</p>
+                        </div>
+                        <a
+                          href={result.gcs_file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                          Download Original
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl shadow-xl p-8 text-center">

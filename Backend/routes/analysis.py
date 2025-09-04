@@ -11,6 +11,7 @@ from services.file_processor import extract_text_from_file
 from services.openai_service import analyze_contract
 from services.pdf_service import generate_analysis_pdf
 from services.firebase_service import db
+from services.gcs_service import gcs_service
 
 router = APIRouter()
 
@@ -26,7 +27,25 @@ async def analyze(
     text = extract_text_from_file(file.filename, content)
     if not text or len(text) < 50:
         raise HTTPException(status_code=400, detail="Contract appears empty or too short.")
-    return analyze_contract(text, role=role, risk=risk_tolerance)
+    
+    result = analyze_contract(text, role=role, risk=risk_tolerance)
+    
+    # Upload file to Google Cloud Storage even for non-authenticated users
+    gcs_file_path = None
+    if gcs_service:
+        gcs_file_path = gcs_service.upload_file(
+            file_content=content,
+            file_name=file.filename,
+            content_type=file.content_type
+        )
+        print(f"File uploaded to GCS for non-authenticated user: {gcs_file_path}")
+    
+    # Add GCS information to the result
+    result_dict = result.dict()
+    result_dict['gcs_file_path'] = gcs_file_path
+    result_dict['gcs_file_url'] = gcs_service.get_file_url(gcs_file_path) if gcs_file_path else None
+    
+    return result_dict
 
 
 @router.post("/analyze_pdf")
@@ -65,9 +84,23 @@ async def analyze_with_user(
     # Save contract to Firebase
     if db:
         try:
+            # Upload file to Google Cloud Storage
+            gcs_file_path = None
+            if gcs_service:
+                gcs_file_path = gcs_service.upload_file(
+                    file_content=content,
+                    file_name=file.filename,
+                    content_type=file.content_type
+                )
+                print(f"File uploaded to GCS: {gcs_file_path}")
+            else:
+                print("GCS service not available, skipping file upload")
+            
             contract_data = {
                 'userId': user_id,
                 'fileName': file.filename,
+                'gcsFilePath': gcs_file_path,  # Add GCS file path
+                'gcsFileUrl': gcs_service.get_file_url(gcs_file_path) if gcs_file_path else None,  # Add GCS file URL
                 'summary': result.summary,
                 'redFlags': result.red_flags,
                 'pushbacks': result.pushbacks,
@@ -84,6 +117,8 @@ async def analyze_with_user(
             # Add the document ID to the response
             result_dict = result.dict()
             result_dict['contract_id'] = doc_ref[1].id
+            result_dict['gcs_file_path'] = gcs_file_path
+            result_dict['gcs_file_url'] = gcs_service.get_file_url(gcs_file_path) if gcs_file_path else None
             
             return result_dict
         except Exception as e:
