@@ -20,6 +20,7 @@ export default function Header() {
       <nav className="hidden md:flex items-center space-x-8 text-black pt-2 pr-2 mt-6">
         <Link href="/analyze" className="hover:underline">Analyze</Link>
         <Link href="/reputation" className="hover:underline">Reputation</Link>
+        <Link href="/access-approval" className="hover:underline">Document Access</Link>
         <Link href="/pricing" className="hover:underline">Subscription</Link>
 
         {/* Only show Vault and My Contracts for registered users */}
