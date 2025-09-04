@@ -76,8 +76,6 @@ export default function PricingPage() {
   return (
     <div className="bg-white font-sans min-h-screen flex flex-col">
       {/* Navigation */}
-      <Header />
-
       {/* Pricing Section */}
       <section className="max-w-6xl mx-auto px-4 py-12 flex-grow">
         {/* Header */}

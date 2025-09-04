@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-//import { AuthProvider } from "../contexts/AuthContext";
 import { AuthProvider } from "@/components/AuthProvider";
+import LayoutWrapper from "./LayoutWrapper";
 
 export const metadata: Metadata = {
   title: "Lindle - AI-powered Contract Assistant",
@@ -20,7 +20,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {children}
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
         </AuthProvider>
       </body>
     </html>

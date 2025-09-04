@@ -16,25 +16,39 @@ from services.gcs_service import gcs_service
 router = APIRouter()
 
 
-@router.post("/analyze", response_model=AnalysisResponse)
-async def analyze(
+@router.post("/analyze")
+async def analyze_contract_endpoint(
     file: UploadFile = File(...),
     role: str = Form("freelancer"),
     risk_tolerance: str = Form("standard"),
 ):
-    """Analyze contract and return JSON response."""
+    """Analyze contract and return results."""
+    # Read file content once for text extraction
     content = await file.read()
     text = extract_text_from_file(file.filename, content)
     if not text or len(text) < 50:
         raise HTTPException(status_code=400, detail="Contract appears empty or too short.")
-    
+
     result = analyze_contract(text, role=role, risk=risk_tolerance)
     
     # Upload file to Google Cloud Storage even for non-authenticated users
     gcs_file_path = None
+    print(gcs_service)
     if gcs_service:
+        # Create a new UploadFile-like object with the content we already read
+        from fastapi import UploadFile
+        import io
+        
+        # Create a new file-like object with the content
+        file_content = io.BytesIO(content)
+        file_content.seek(0)
+        
+        print(f"Uploading to GCS - Filename: {file.filename}")
+        print(f"Uploading to GCS - Content Type: {file.content_type}")
+        print(f"Uploading to GCS - File Size: {len(content)} bytes")
+        
         gcs_file_path = gcs_service.upload_file(
-            file_content=content,
+            file_content=content,  # Pass the bytes directly
             file_name=file.filename,
             content_type=file.content_type
         )
@@ -87,8 +101,13 @@ async def analyze_with_user(
             # Upload file to Google Cloud Storage
             gcs_file_path = None
             if gcs_service:
+                # Pass the bytes directly since we already read them
+                print(f"Uploading to GCS - Filename: {file.filename}")
+                print(f"Uploading to GCS - Content Type: {file.content_type}")
+                print(f"Uploading to GCS - File Size: {len(content)} bytes")
+                
                 gcs_file_path = gcs_service.upload_file(
-                    file_content=content,
+                    file_content=content,  # Pass the bytes directly
                     file_name=file.filename,
                     content_type=file.content_type
                 )

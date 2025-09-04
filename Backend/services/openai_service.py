@@ -5,21 +5,42 @@ import os
 import re
 from fastapi import HTTPException
 from models.analysis import AnalysisResponse
+from dotenv import load_dotenv
 
-# Langfuse configuration
-from langfuse import Langfuse, observe
 
-langfuse = Langfuse(
-    secret_key="sk-lf-c737c80e-47d9-4f27-958c-c8de46832b1f",
-    public_key="pk-lf-206d5042-8320-4155-9e14-185bcc9ed231",
-    host="https://cloud.langfuse.com"
-)
-
-# Import Langfuse wrapped OpenAI client
+# Langfuse configuration - handle import errors gracefully
+langfuse = None
 try:
-    from langfuse.openai import openai
+    from langfuse import Langfuse
+    langfuse = Langfuse(
+        secret_key="sk-lf-c737c80e-47d9-4f27-958c-c8de46832b1f",
+        public_key="pk-lf-206d5042-8320-4155-9e14-185bcc9ed231",
+        host="https://cloud.langfuse.com"
+    )
+    print("Langfuse initialized successfully")
 except Exception as e:
-    raise RuntimeError("Langfuse not installed. Run: pip install langfuse")
+    print(f"Warning: Langfuse not available: {e}")
+    langfuse = None
+
+# Import Langfuse wrapped OpenAI client - handle import errors gracefully
+langfuse_openai = None
+try:
+    from langfuse.openai import openai as langfuse_openai
+    print("Langfuse OpenAI client imported successfully")
+except Exception as e:
+    print(f"Warning: Langfuse OpenAI client not available: {e}")
+    langfuse_openai = None
+
+# Fallback to regular OpenAI client
+try:
+    from openai import OpenAI
+    print("Regular OpenAI client imported successfully")
+except Exception as e:
+    print(f"Warning: Regular OpenAI client not available: {e}")
+    OpenAI = None
+
+
+load_dotenv() # Load environment variables from .env file if present
 
 # OpenAI configuration
 _API_KEY = os.getenv("OPENAI_API_KEY")
@@ -29,7 +50,18 @@ def _get_openai_client():
     """Get OpenAI client instance."""
     if not _API_KEY:
         return None
-    return openai.OpenAI(api_key=_API_KEY, project=_PROJECT) if _PROJECT else openai.OpenAI(api_key=_API_KEY)
+    
+    # Try Langfuse OpenAI first, fallback to regular OpenAI
+    if langfuse_openai:
+        try:
+            return langfuse_openai.OpenAI(api_key=_API_KEY, project=_PROJECT) if _PROJECT else langfuse_openai.OpenAI(api_key=_API_KEY)
+        except Exception as e:
+            print(f"Langfuse OpenAI client failed, falling back to regular client: {e}")
+    
+    if OpenAI:
+        return OpenAI(api_key=_API_KEY, project=_PROJECT) if _PROJECT else OpenAI(api_key=_API_KEY)
+    
+    return None
 
 # Model configuration
 MODEL = os.getenv("LINDLE_MODEL", "gpt-4o-mini")
@@ -51,7 +83,6 @@ USER_PROMPT_TEMPLATE = (
 )
 
 
-@observe()
 def analyze_contract(contract_text: str, role: str, risk: str) -> AnalysisResponse:
     """Analyze contract text using OpenAI and return structured response."""
     if not _API_KEY:
@@ -59,39 +90,43 @@ def analyze_contract(contract_text: str, role: str, risk: str) -> AnalysisRespon
 
     client = _get_openai_client()
     if not client:
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not set on server")
+        raise HTTPException(status_code=500, detail="OpenAI client not available")
 
     trimmed = contract_text[:20000]  # basic guardrail
     user_prompt = USER_PROMPT_TEMPLATE.format(role=role, risk=risk, contract=trimmed)
 
-    completion = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.2,
-    )
-
-    content = completion.choices[0].message.content or ""
     try:
-        m = re.search(r"\{[\s\S]*\}", content)
-        data = json.loads(m.group(0) if m else content)
-        summary = (data.get("summary") or "").strip()
-        red_flags = [str(x).strip() for x in (data.get("red_flags") or [])][:5]
-        pushbacks = [str(x).strip() for x in (data.get("pushbacks") or [])][:5]
-    except Exception:
-        summary, red_flags, pushbacks = content[:1000], [], []
+        completion = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.2,
+        )
 
-    tokens_used = None
-    try:
-        tokens_used = getattr(completion, "usage", None).total_tokens
-    except Exception:
-        pass
+        content = completion.choices[0].message.content or ""
+        try:
+            m = re.search(r"\{[\s\S]*\}", content)
+            data = json.loads(m.group(0) if m else content)
+            summary = (data.get("summary") or "").strip()
+            red_flags = [str(x).strip() for x in (data.get("red_flags") or [])][:5]
+            pushbacks = [str(x).strip() for x in (data.get("pushbacks") or [])][:5]
+        except Exception:
+            summary, red_flags, pushbacks = content[:1000], [], []
 
-    return AnalysisResponse(
-        summary=summary, 
-        red_flags=red_flags, 
-        pushbacks=pushbacks, 
-        tokens_used=tokens_used
-    )
+        tokens_used = None
+        try:
+            tokens_used = getattr(completion, "usage", None).total_tokens
+        except Exception:
+            pass
+
+        return AnalysisResponse(
+            summary=summary, 
+            red_flags=red_flags, 
+            pushbacks=pushbacks, 
+            tokens_used=tokens_used
+        )
+    except Exception as e:
+        print(f"Error in OpenAI analysis: {e}")
+        raise HTTPException(status_code=500, detail=f"OpenAI analysis failed: {str(e)}")

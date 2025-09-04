@@ -6,8 +6,6 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 font-sans min-h-screen flex flex-col">
       {/* Navigation */}
-      <Header />
-
       {/* Main Content Area */}
       <main className="flex-grow">
         {/* Hero Section */}

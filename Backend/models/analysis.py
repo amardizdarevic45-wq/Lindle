@@ -10,3 +10,9 @@ class AnalysisResponse(BaseModel):
     red_flags: List[str]
     pushbacks: List[str]
     tokens_used: Optional[int] = None
+    counterparty: Optional[str] = None
+    counterparty_type: Optional[str] = None
+    industry: Optional[str] = None
+    gcs_file_path: Optional[str] = None
+    gcs_file_url: Optional[str] = None
+    contract_id: Optional[str] = None

@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useAuth } from './AuthProvider';
 
 export default function AuthButton() {
-  const { user, loading, signIn, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
 
   if (loading) {
     return <div className="text-sm text-gray-600">Loading...</div>;
@@ -36,11 +37,11 @@ export default function AuthButton() {
   }
 
   return (
-    <button
-      onClick={signIn}
-      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+    <Link
+      href="/login"
+      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm transition-colors"
     >
-      Sign In with Google
-    </button>
+      Register/Login
+    </Link>
   );
 }

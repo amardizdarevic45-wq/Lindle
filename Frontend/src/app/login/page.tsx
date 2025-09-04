@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../../firebase';
 import Link from 'next/link';
 import Header from '../../components/Header';
+import { useAuth } from '../../components/AuthProvider';
 
 interface LoginFormData {
   email: string;
@@ -18,6 +19,7 @@ export default function LoginPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { signIn } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,6 +68,16 @@ export default function LoginPage() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn();
+      // Redirect will be handled by AuthProvider
+    } catch (err: any) {
+      console.error('Error signing in with Google: ', err);
+      setError('Failed to sign in with Google. Please try again.');
     }
   };
 

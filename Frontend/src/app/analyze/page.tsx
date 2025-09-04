@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Header from '../../components/Header';
 import { useAuth } from '../../components/AuthProvider';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -32,39 +31,6 @@ export default function AnalyzePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-    }
-  };
-
-  const saveContractToFirebase = async (analysisData: AnalysisResult, fileName: string) => {
-    if (!user) {
-      console.log('User not authenticated, skipping Firebase save');
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, 'contracts'), {
-        fileName: fileName,
-        role: role,
-        riskTolerance: riskTolerance,
-        summary: analysisData.summary,
-        redFlags: analysisData.red_flags,
-        pushbacks: analysisData.pushbacks,
-        tokensUsed: analysisData.tokens_used,
-        status: contractStatus,
-        userId: user.uid,
-        userEmail: user.email,
-        gcsFilePath: analysisData.gcs_file_path,  // Add GCS file path
-        gcsFileUrl: analysisData.gcs_file_url,    // Add GCS file URL
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      console.log('Contract saved to Firebase successfully');
-      
-      // Show success message
-      alert('Contract analyzed and saved to your dashboard! You can view it in "My Contracts"');
-    } catch (error) {
-      console.error('Error saving contract to Firebase:', error);
-      // Don't throw error to avoid disrupting user experience
     }
   };
 
@@ -193,26 +159,14 @@ export default function AnalyzePage() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-900 min-h-screen flex flex-col">
-      {/* Navigation */}
-      <Header />
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Main Content */}
-      <main className="flex-grow">
-        <div className="max-w-7xl mx-auto py-8 px-4">
-          {/* Desktop Layout: Form on left, Results on right */}
-          <div className="flex flex-col lg:flex-row gap-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Desktop Layout: Form on left, Results on right */}
+        <div className="flex flex-col lg:flex-row gap-8">
             {/* Form Section */}
             <div className="w-full lg:w-1/2">
               <div className="bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl shadow-xl p-6 space-y-6 sticky top-8">
-                {/* Header Text in Form Panel */}
-                <div className="mb-6">
-                  <h1 className="text-3xl font-bold text-[#0066FF] mb-2 text-left">Smart. Clear. Fun</h1>
-                  <p className="text-gray-600 text-left">
-                    Upload a contract to get a summary, red flags, and pushback suggestions.
-                  </p>
-                </div>
-
                 <form onSubmit={handleAnalyze} className="space-y-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">Contract File</label>
@@ -422,14 +376,6 @@ export default function AnalyzePage() {
             </div>
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white/80 backdrop-blur-sm border-t border-white/20 text-center py-4">
-        <p className="text-sm text-gray-600">
-          © 2025 Lindle. All rights reserved.
-        </p>
-      </footer>
-    </div>
+      </div>
   );
 } 

@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Header from '../../components/Header';
 import { useAuth } from '../../components/AuthProvider';
 import { collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { useRouter } from 'next/navigation';
 
 interface Contract {
   id: string;
@@ -19,6 +19,8 @@ interface Contract {
   createdAt: string;
   updatedAt?: string;
   userId: string;
+  gcsFilePath?: string;
+  gcsFileUrl?: string;
   aiReminder?: string;
   aiSuggestion?: string;
 }
@@ -37,6 +39,7 @@ export default function ContractsPage() {
   const [loadingContracts, setLoadingContracts] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [aiReminders, setAiReminders] = useState<{ [contractId: string]: string }>({});
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -167,7 +170,6 @@ export default function ContractsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="container mx-auto px-4 py-8">
-          <Header />
           <div className="text-center py-16">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">My Contracts</h1>
             <p className="text-gray-600 mb-8">Please sign in to view your contract history and manage your deals.</p>
@@ -179,8 +181,8 @@ export default function ContractsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        <Header />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         
         <div className="mt-8">
           <div className="flex justify-between items-center mb-6">
@@ -216,7 +218,12 @@ export default function ContractsPage() {
                     <div key={contractId} className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium text-blue-900">{contract?.fileName}</p>
+                          <button
+                            onClick={() => router.push(`/contracts/${contractId}`)}
+                            className="font-medium text-blue-900 hover:text-blue-700 hover:underline cursor-pointer"
+                          >
+                            {contract?.fileName}
+                          </button>
                           <p className="text-blue-700 mt-1">{reminder}</p>
                         </div>
                       </div>
@@ -255,6 +262,9 @@ export default function ContractsPage() {
                         Red Flags
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        File Storage
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -267,7 +277,12 @@ export default function ContractsPage() {
                       <tr key={contract.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {contract.fileName}
+                            <button
+                              onClick={() => router.push(`/contracts/${contract.id}`)}
+                              className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                            >
+                              {contract.fileName}
+                            </button>
                           </div>
                           <div className="text-sm text-gray-500 truncate max-w-md">
                             {contract.summary}
@@ -285,20 +300,35 @@ export default function ContractsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {contract.gcsFilePath ? (
+                            <span className="text-green-600">✓</span>
+                          ) : (
+                            <span className="text-red-600">✗</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(contract.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <select
-                            value={contract.status}
-                            onChange={(e) => updateContractStatus(contract.id, e.target.value as Contract['status'])}
-                            className="border rounded px-2 py-1 text-xs"
-                          >
-                            {STATUS_OPTIONS.map(option => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="flex space-x-2">
+                            <select
+                              value={contract.status}
+                              onChange={(e) => updateContractStatus(contract.id, e.target.value as Contract['status'])}
+                              className="border rounded px-2 py-1 text-xs"
+                            >
+                              {STATUS_OPTIONS.map(option => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => router.push(`/contracts/${contract.id}`)}
+                              className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
+                            >
+                              View Details
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
