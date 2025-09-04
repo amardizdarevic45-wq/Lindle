@@ -106,25 +106,13 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
       {/* Sidebar */}
       <div className={`
-        fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white shadow-xl z-50 transition-all duration-300 ease-in-out
+        fixed top-0 left-0 h-screen bg-white shadow-xl z-50 transition-all duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         ${isCollapsed ? 'w-16' : 'w-64'}
         lg:translate-x-0 lg:static lg:z-auto
       `}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/logo.png"
-                alt="Lindle Logo"
-                width={32}
-                height={32}
-                className="rounded-lg"
-              />
-              <span className="font-semibold text-gray-900">Lindle</span>
-            </div>
-          )}
           
           <div className="flex items-center space-x-2">
             {/* Collapse/Expand button */}

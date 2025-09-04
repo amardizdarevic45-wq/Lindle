@@ -30,14 +30,16 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header 
-        onSidebarToggle={toggleSidebar}
-        showSidebarToggle={!!user}
-      />
+      {/* Header - only show for non-authenticated users */}
+      {!user && (
+        <Header 
+          onSidebarToggle={toggleSidebar}
+          showSidebarToggle={false}
+        />
+      )}
       
       {/* Main Content with Sidebar */}
-      <div className="flex min-h-screen pt-16">
+      <div className="flex min-h-screen">
         {/* Sidebar - only show for authenticated users */}
         {user && (
           <Sidebar 
@@ -48,7 +50,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
         
         {/* Main Content */}
         <main className={`flex-1 transition-all duration-300 ${
-          user ? 'lg:ml-64' : ''
+          user ? 'lg:ml-0' : 'pt-16'
         }`}>
           {children}
         </main>

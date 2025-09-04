@@ -16,3 +16,5 @@ class AnalysisResponse(BaseModel):
     gcs_file_path: Optional[str] = None
     gcs_file_url: Optional[str] = None
     contract_id: Optional[str] = None
+    extracted_text: Optional[str] = None
+    extracted_clauses: Optional[List[str]] = None

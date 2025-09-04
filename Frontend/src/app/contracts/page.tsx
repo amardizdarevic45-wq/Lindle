@@ -23,6 +23,8 @@ interface Contract {
   gcsFileUrl?: string;
   aiReminder?: string;
   aiSuggestion?: string;
+  extractedText?: string;
+  extractedClauses?: string[];
 }
 
 const STATUS_OPTIONS = [
@@ -63,6 +65,7 @@ export default function ContractsPage() {
         ...doc.data()
       })) as Contract[];
 
+      console.log(contractsList);
       setContracts(contractsList);
     } catch (error) {
       console.error('Error loading contracts:', error);
@@ -82,9 +85,12 @@ export default function ContractsPage() {
       const querySnapshot = await getDocs(q);
       
       const reminders: { [contractId: string]: string } = {};
+
+      console.log(querySnapshot.docs);
       
       querySnapshot.docs.forEach(doc => {
         const contract = doc.data() as Contract;
+        console.log(contract);
         const daysSinceCreated = Math.floor((Date.now() - new Date(contract.createdAt).getTime()) / (1000 * 60 * 60 * 24));
         
         // Generate AI-like reminders based on contract status and time

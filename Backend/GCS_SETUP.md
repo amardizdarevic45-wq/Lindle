@@ -18,8 +18,21 @@ This document explains how to set up Google Cloud Storage for the Lindle project
 4. Click "Create Bucket"
 5. Set bucket name to: `lindle-docs`
 6. Choose your preferred location and storage class
-7. Set access control to "Uniform"
+7. **Important**: Set access control to "Uniform" (this is the default and recommended setting)
 8. Click "Create"
+
+### 2. Configure Bucket Permissions for Public Read Access
+
+Since you're using uniform bucket-level access, you need to configure public read access at the bucket level:
+
+1. Go to your `lindle-docs` bucket
+2. Click on the "Permissions" tab
+3. Click "Add" to add a new member
+4. Add `allUsers` as a member
+5. Grant the role: `Storage Object Viewer`
+6. This will make all objects in the bucket publicly readable
+
+**Note**: With uniform bucket-level access, you cannot set individual object ACLs. All access control is managed at the bucket level.
 
 ### 2. Configure Authentication
 
@@ -77,7 +90,7 @@ GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"
 1. **File Upload**: When a user uploads a contract, it's automatically saved to the `lindle-docs` bucket
 2. **Unique Naming**: Files are stored with UUID-based names to avoid conflicts
 3. **Firebase Integration**: The GCS file path and URL are stored in Firebase alongside the analysis results
-4. **Public Access**: Files are made publicly readable for easy access (configurable)
+4. **Public Access**: Files are publicly readable through uniform bucket-level access configuration (no individual object ACLs needed)
 
 ## File Structure in GCS
 
@@ -92,7 +105,9 @@ lindle-docs/
 ## Security Considerations
 
 - Files are stored with unique UUIDs to prevent enumeration
-- Consider implementing signed URLs for more secure access
+- **Uniform bucket-level access** is enabled for better security
+- Public read access is configured at the bucket level
+- Consider implementing signed URLs for more secure access in the future
 - Review bucket permissions regularly
 - Consider implementing lifecycle policies for automatic cleanup
 

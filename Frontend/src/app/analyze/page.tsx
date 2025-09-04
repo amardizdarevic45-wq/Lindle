@@ -12,9 +12,14 @@ interface AnalysisResult {
   red_flags: string[];
   pushbacks: string[];
   tokens_used?: number;
+  counterparty?: string;
+  counterparty_type?: string;
+  industry?: string;
   gcs_file_path?: string;
   gcs_file_url?: string;
   contract_id?: string;
+  extracted_text?: string; // Added for extracted text
+  extracted_clauses?: string[]; // Added for extracted clauses
 }
 
 export default function AnalyzePage() {
@@ -37,21 +42,24 @@ export default function AnalyzePage() {
   // Keep the old function for backward compatibility with existing analyses
   const saveAnalysisToFirebase = async (analysisData: AnalysisResult, fileName: string) => {
     try {
-      await addDoc(collection(db, 'contractAnalyses'), {
-        fileName: fileName,
-        role: role,
-        riskTolerance: riskTolerance,
-        summary: analysisData.summary,
-        redFlags: analysisData.red_flags,
-        pushbacks: analysisData.pushbacks,
-        tokensUsed: analysisData.tokens_used,
-        timestamp: new Date(),
-        createdAt: new Date().toISOString(),
-        userId: user?.uid || null,
-        userEmail: user?.email || null,
-        gcsFilePath: analysisData.gcs_file_path,  // Add GCS file path
-        gcsFileUrl: analysisData.gcs_file_url,    // Add GCS file URL
-      });
+      const contract_data = {
+        'userId': user?.uid,
+        'fileName': fileName,
+        'gcsFilePath': analysisData.gcs_file_path,
+        'gcsFileUrl': analysisData.gcs_file_url,
+        'summary': analysisData.summary,
+        'redFlags': analysisData.red_flags,
+        'pushbacks': analysisData.pushbacks,
+        'tokensUsed': analysisData.tokens_used,
+        'status': contractStatus,
+        'role': role,
+        'riskTolerance': riskTolerance,
+        'extractedText': analysisData.extracted_text, // Add extracted text
+        'extractedClauses': analysisData.extracted_clauses, // Add extracted clauses
+        'createdAt': new Date().toISOString(),
+        'updatedAt': new Date().toISOString(),
+      };
+      await addDoc(collection(db, 'contracts'), contract_data);
       console.log('Analysis saved to Firebase successfully');
     } catch (error) {
       console.error('Error saving analysis to Firebase:', error);
@@ -98,6 +106,7 @@ export default function AnalyzePage() {
       setStatus('');
 
       // Only save to Firebase from frontend if not already saved by backend
+      console.log("User:", user)
       if (!user) {
         await saveAnalysisToFirebase(data, file.name);
       } else {

@@ -25,6 +25,8 @@ interface Contract {
   gcsFileUrl?: string;
   aiReminder?: string;
   aiSuggestion?: string;
+  extractedText?: string;
+  extractedClauses?: string[];
 }
 
 interface TimelineEvent {
@@ -375,6 +377,37 @@ export default function SingleContractPage() {
                   <p className="text-gray-500">No pushbacks suggested. Contract looks solid! 👍</p>
                 )}
               </div>
+
+              {/* Extracted Text */}
+              {contract.extractedText && (
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <span className="text-blue-500 mr-2">📄</span>
+                    Extracted Text
+                  </h2>
+                  <div className="bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">{contract.extractedText}</pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Extracted Clauses */}
+              {contract.extractedClauses && contract.extractedClauses.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                    <span className="text-purple-500 mr-2">📋</span>
+                    Document Clauses ({contract.extractedClauses.length})
+                  </h2>
+                  <div className="space-y-3">
+                    {contract.extractedClauses.map((clause, index) => (
+                      <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-sm text-gray-600 mb-1 font-medium">Clause {index + 1}</div>
+                        <p className="text-gray-700">{clause}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sidebar - Right Column */}
@@ -384,7 +417,7 @@ export default function SingleContractPage() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">File Information</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Original File</label>
+                    <label className="block text-sm font-medium text-gray-600">Original File</label>
                     {contract.gcsFileUrl ? (
                       <div className="space-y-2">
                         <a

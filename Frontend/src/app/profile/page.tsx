@@ -5,6 +5,7 @@ import Header from '../../components/Header';
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
+import Link from 'next/link';
 
 interface Contract {
   id: string;
@@ -172,12 +173,12 @@ export default function Profile() {
             <p className="text-gray-600 mb-6">
               Please sign in to access your profile and manage your contracts.
             </p>
-            <button
-              onClick={handleSignIn}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition-colors font-medium"
+            <Link
+              href="/login"
+              className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition-colors font-medium"
             >
-              Sign In with Google
-            </button>
+              Register/Login
+            </Link>
           </div>
         </main>
       </div>

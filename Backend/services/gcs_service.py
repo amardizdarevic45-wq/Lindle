@@ -100,9 +100,8 @@ class GCSService:
                 content_type=blob.content_type
             )
             
-            # Make the file publicly readable (optional, remove if not needed)
-            blob.make_public()
-            
+            # Note: make_public() is not needed when uniform bucket-level access is enabled
+            # The bucket should be configured to allow public read access at the bucket level
             print(f"File uploaded successfully to GCS: {blob_name}")
             print(f"Content-Type: {blob.content_type}")
             print(f"File size: {len(file_bytes)} bytes")
@@ -133,6 +132,7 @@ class GCSService:
     def get_file_url(self, blob_name: str) -> Optional[str]:
         """
         Get the public URL for a file in GCS.
+        For uniform bucket-level access, construct the URL directly.
         
         Args:
             blob_name: Name of the blob in GCS
@@ -144,8 +144,9 @@ class GCSService:
             return None
         
         try:
-            blob = self.bucket.blob(blob_name)
-            return blob.public_url
+            # For uniform bucket-level access, construct the public URL directly
+            # The bucket should be configured to allow public read access
+            return f"https://storage.googleapis.com/{self.bucket_name}/{blob_name}"
         except Exception as e:
             print(f"Error getting file URL from GCS: {e}")
             return None

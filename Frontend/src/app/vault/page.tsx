@@ -367,7 +367,6 @@ export default function VaultPage() {
   if (loading && !vault) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">Loading your Personal Clause Vault...</div>
         </div>
@@ -377,7 +376,6 @@ export default function VaultPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
-      <Header />
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
