@@ -78,7 +78,7 @@ export default function PricingPage() {
             Simple, transparent pricing
           </h1>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            Choose the perfect plan for your contract review needs. Start with our free plan and upgrade as you grow.
+            Choose the perfect plan for your contract needs. Start with our free plan and upgrade as you grow.
           </p>
         </div>
 
